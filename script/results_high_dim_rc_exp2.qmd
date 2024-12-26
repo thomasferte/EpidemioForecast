@@ -241,8 +241,8 @@ plot_best_numeric_hp <- df_all_hp_best40 |>
   ggridges::geom_density_ridges(alpha = 0.5) +
   facet_wrap(model ~ ., scales = "free_y", switch = "both") +
   scale_x_log10(breaks = c(1e-10, 1e-5, 1, 1e5)) +
-  scale_fill_manual(values = c("#264653", "#2A9D8F", "#F4A261", "#E76F51")) +
-  scale_color_manual(values = c("#264653", "#2A9D8F", "#F4A261", "#E76F51")) +
+  scale_fill_manual(values = c("#e66101", "#fdb863", "#b2abd2", "#5e3c99")) +
+  scale_color_manual(values = c("#e66101", "#fdb863", "#b2abd2", "#5e3c99")) +
   theme_minimal() +
   theme(legend.position = "bottom") +
   labs(x = "Hyperparameter value",

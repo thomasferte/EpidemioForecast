@@ -16,6 +16,11 @@ library(ggplot2)
 library(cowplot)
 source(file = here::here("script/FctCleanFeaturesName.R"))
 set.seed(1)
+
+blue_palette <- viridis::mako(n = 4, end = 0.9)
+red_palette <- c("black", "#d7301f", "#fc8d59", "#fdcc8a")
+puor_palette <- c("#5e3c99", "#b2abd2", "#fdb863", "#e66101")
+bicolor_palette <- viridis::cividis(n = 2, begin = 0.2, direction = -1)
 ```
 
 # Introduction
@@ -286,7 +291,7 @@ graph_perf <- df_perf |>
   geom_line(position = position_dodge(width = .1)) +
   facet_wrap(update ~ .) +
   theme_minimal() +
-  scale_color_manual(values = c("black", "#03045E", "#0077B6", "#00B4D8")) +
+  scale_color_manual(values = blue_palette) +
   scale_x_log10(breaks = df_perf$lr_sigma |> unique()) +
   labs(y = "Mean absolute error",
        x = "Leaking rate sigma",
@@ -385,7 +390,7 @@ plot_best_numeric_hp_values_bylr_sigma <- df_all_hp_best40 |>
   theme(axis.text.x = element_text(angle = 90),
         legend.position = "bottom") +
   guides(color = guide_legend(ncol = 2)) +
-  scale_color_manual(values = c("black", "#03045E", "#0077B6", "#00B4D8")) +
+  scale_color_manual(values = blue_palette) +
   labs(y = "Mean absolute error",
        x = "Date",
        color = "P(mutation categorical genes)")
@@ -407,7 +412,7 @@ plot_best_numeric_hp_values_bypmutcat <- df_all_hp_best40 |>
   theme(axis.text.x = element_text(angle = 90),
         legend.position = "bottom") +
   guides(color = guide_legend(ncol = 2)) +
-  scale_color_manual(values = c("black", "#6A040F", "#D00000", "#E85D04")) +
+  scale_color_manual(values = red_palette) +
   labs(y = "Mean absolute error",
        x = "Date",
        color = "sigma(leaking rate)")
@@ -472,8 +477,8 @@ plot_best_numeric_hp <- df_all_hp_best40 |>
   ggridges::geom_density_ridges(alpha = 0.5) +
   facet_grid(pmutCat ~ lr_sigma, scales = "free_y", labeller = label_both, switch = "both") +
   scale_x_log10(breaks = c(1e-10, 1e-5, 1, 1e5)) +
-  scale_fill_manual(values = c("#264653", "#2A9D8F", "#F4A261", "#E76F51")) +
-  scale_color_manual(values = c("#264653", "#2A9D8F", "#F4A261", "#E76F51")) +
+  scale_fill_manual(values = puor_palette) +
+  scale_color_manual(values = puor_palette) +
   theme_minimal() +
   theme(legend.position = "bottom") +
   labs(x = "Hyperparameter value",
@@ -544,8 +549,8 @@ plot_22 <- df_all_hp_best40 |>
   scale_x_log10(breaks = c(1e-4, 1e-2, 1, 1e2, 1e4, 1e6),
                 labels = function(x) format(x, scientific = TRUE)) +
   scale_y_log10(labels = function(x) format(x, scientific = TRUE)) +
-  scale_color_gradient(low = "red",
-                       high = "#2A9D8F",
+  scale_color_gradient(low = bicolor_palette[1],
+                       high = bicolor_palette[2],
                        trans = "log",
                        breaks = c(1, 5*1e-3, 1e-5)) +
   facet_grid(name ~ ., scales = "free_y") +
@@ -571,8 +576,8 @@ plot_lr_influence_train_set <- df_all_hp_best40 |>
         file_hp = forcats::fct_rev(file_hp)) |> 
   ggplot(mapping = aes(x = value, color = lr_inf_2, fill = lr_inf_2, y = file_hp)) +
   ggridges::geom_density_ridges(alpha = 0.5) +
-  scale_color_manual(values = c("red", "#2A9D8F")) +
-  scale_fill_manual(values = c("red", "#2A9D8F")) +
+  scale_color_manual(values = bicolor_palette) +
+  scale_fill_manual(values = bicolor_palette) +
   theme_minimal() +
   labs(color = "", fill = "",
        x = "MAE on train set",
@@ -681,7 +686,7 @@ plot_lr_influence_test_set <- ggplot(df_perf_lr_by_month, mapping = aes(x = outc
                                                                         shape = update)) +
   geom_point() +
   geom_line() +
-  scale_color_manual(values = c("red", "#2A9D8F")) +
+  scale_color_manual(values = bicolor_palette) +
   labs(x = "Date",
        y = "MAE on test set",
        color = "",
@@ -754,7 +759,7 @@ plot_nb_features <- temp |>
   geom_point(position = position_dodge(width=.5)) +
   geom_line(position = position_dodge(width=.5)) +
   facet_grid(lr_sigma ~ ., labeller = label_both) +
-  scale_color_manual(values = c("black", "#03045E", "#0077B6", "#00B4D8")) +
+  scale_color_manual(values = blue_palette) +
   scale_y_continuous(breaks = seq(0,400, by =20)) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 90)) +
