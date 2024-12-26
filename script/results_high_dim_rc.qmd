@@ -17,10 +17,11 @@ library(cowplot)
 source(file = here::here("script/FctCleanFeaturesName.R"))
 set.seed(1)
 
-blue_palette <- viridis::mako(n = 4, end = 0.9)
+blue_palette <- viridis::mako(n = 4, end = 0.8)
 red_palette <- c("black", "#d7301f", "#fc8d59", "#fdcc8a")
-puor_palette <- c("#5e3c99", "#b2abd2", "#fdb863", "#e66101")
-bicolor_palette <- viridis::cividis(n = 2, begin = 0.2, direction = -1)
+# puor_palette <- c("#5e3c99", "#b2abd2", "#fdb863", "#e66101")
+puor_palette <- viridis::magma(n = 4, end = 0.9)
+bicolor_palette <- viridis::cividis(n = 2, end = 0.85, direction = -1)
 ```
 
 # Introduction
@@ -549,10 +550,12 @@ plot_22 <- df_all_hp_best40 |>
   scale_x_log10(breaks = c(1e-4, 1e-2, 1, 1e2, 1e4, 1e6),
                 labels = function(x) format(x, scientific = TRUE)) +
   scale_y_log10(labels = function(x) format(x, scientific = TRUE)) +
-  scale_color_gradient(low = bicolor_palette[1],
-                       high = bicolor_palette[2],
-                       trans = "log",
-                       breaks = c(1, 5*1e-3, 1e-5)) +
+  scale_color_gradient2(low = bicolor_palette[1],
+                        high = bicolor_palette[2],
+                        mid = bicolor_palette[1],
+                        midpoint = -8,
+                        trans = "log",
+                        breaks = c(1, 5*1e-3, 1e-5)) +
   facet_grid(name ~ ., scales = "free_y") +
   theme_minimal() +
   theme(legend.position = "bottom") +
