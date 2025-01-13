@@ -4,11 +4,11 @@
 # les directives Slurm vont ici:
 
 # Your job name (displayed by the queue)
-#SBATCH -J method_enet_history_90_features_epi
+#SBATCH -J method_xgboost_date_2021-03-01_features_epi
 
 # walltime (hh:mm::ss)
 #SBATCH -t 06:30:00
-#SBATCH --begin=now+16hours
+#SBATCH --begin=now+8hours
 
 
 # change working directory

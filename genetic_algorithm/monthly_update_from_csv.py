@@ -4,7 +4,13 @@ from genetic_algorithm.parallelise_to_csv import *
 
 def reevaluate_previous_trials(previous_perf_path, perf_folder, date, data_path, Npop, scenari, array_id, units = 500):
     print("get features")
-    forecast_days, features, global_optimizer, nb_esn = features_nbesn_optimizer_from_scenari(scenari)
+    if isinstance(scenari, dict):
+        forecast_days = scenari["forecast_days"]
+        features = scenari["features"]
+        global_optimizer = scenari["global_optimizer"]
+        nb_esn = scenari["nb_esn"]
+    else:
+        forecast_days, features, global_optimizer, nb_esn = features_nbesn_optimizer_from_scenari(scenari)
     
     ##### select best trials from previous results
     print("get file perf = " + previous_perf_path)

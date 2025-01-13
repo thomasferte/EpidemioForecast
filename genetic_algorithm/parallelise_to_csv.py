@@ -364,10 +364,19 @@ def features_nbesn_optimizer_from_scenari(scenari):
 
 def csv_sampler(path_file, data_path, output_path, scenari, array_id = 1, Npop = 200, Ne = 100, nb_trials = 3200, date = '2021-03-01', units = 500, pmutQuant = .5, pmutCat = .25, sigma = 1, sigmahalv = 1/10, NbFeaturesPenalty = 0, TournamentFeaturesPenalty = False, Ntournament = 2):
     
-    forecast_days, features, global_optimizer, nb_esn = features_nbesn_optimizer_from_scenari(scenari)
+    if isinstance(scenari, dict):
+        forecast_days = scenari["forecast_days"]
+        features = scenari["features"]
+        global_optimizer = scenari["global_optimizer"]
+        nb_esn = scenari["nb_esn"]
+        ### Define hp distribution
+        hp_df = scenari_define_hp_distribution(scenari["scenari_pipeline"], features)
     
-    ### Define hp distribution
-    hp_df = scenari_define_hp_distribution(scenari, features)
+    else:
+        forecast_days, features, global_optimizer, nb_esn = features_nbesn_optimizer_from_scenari(scenari)
+        ### Define hp distribution
+        hp_df = scenari_define_hp_distribution(scenari, features)
+        
     ### initiate nb_trials_done
     cpt = 0
     while cpt < 100:

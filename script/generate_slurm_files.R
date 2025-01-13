@@ -1,8 +1,8 @@
 library(dplyr)
 
 ##### GeneticSingleIs_GA_GAHPDEF #####
-generate_slurm_exp1 <- function(folder, method, history, features, delayed) {
-  slurm_scenari <- glue::glue("method_{method}_history_{history}_features_{features}")
+generate_slurm_exp1 <- function(folder, method, date, features, delayed) {
+  slurm_scenari <- glue::glue("method_{method}_date_{date}_features_{features}")
   res <- glue::glue(
     '#!/bin/bash
 
@@ -68,8 +68,8 @@ generate_slurm_exp1 <- function(folder, method, history, features, delayed) {
   return(NULL)
 }
 
-generate_slurm_exp1_test <- function(folder, method, history, features, delayed) {
-  slurm_scenari <- glue::glue("method_{method}_history_{history}_features_{features}")
+generate_slurm_exp1_test <- function(folder, method, date, features, delayed) {
+  slurm_scenari <- glue::glue("method_{method}_date_{date}_features_{features}")
 
   res <- glue::glue(
     '#!/bin/bash
@@ -136,7 +136,7 @@ generate_slurm_exp1_test <- function(folder, method, history, features, delayed)
 
 df_exp1 <- list(
   method = c("enet", "xgboost", "reservoir"),
-  history = c(365, 90),
+  date = c("2021-03-01", "2020-06-01"),
   features = c("epi", "all")
 ) %>%
   expand.grid() %>%
@@ -150,7 +150,7 @@ df_exp1 %>%
       generate_slurm_exp1(
         folder = "slurm_experiments/experience1",
         method = row["method"],
-        history = as.numeric(row["history"]),
+        date = row["date"],
         features = row["features"],
         delayed = as.numeric(row["delayed"])
       )
@@ -164,7 +164,7 @@ df_exp1 %>%
       generate_slurm_exp1_test(
         folder = "slurm_experiments/experience1_test",
         method = row["method"],
-        history = as.numeric(row["history"]),
+        date = row["date"],
         features = row["features"],
         delayed = as.numeric(row["delayed"])
       )
