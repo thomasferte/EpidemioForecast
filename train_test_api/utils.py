@@ -369,7 +369,7 @@ def task(index, selected_files,application_param,reservoir_param,output_path,job
             input_scaling_list.append(reservoir_param.input_scaling[column])
         reservoir_param.input_scaling = np.array(input_scaling_list)
 
-    pred_esn = pd.DataFrame(columns = ["outcomeDate", "outcome", "hosp","pred","nbFeatures","model", "mintraining"])
+    pred_esn = None
     importance = None
     current_outcomeDate = dftest['outcomeDate'].tail(1).to_list()[0]
     
@@ -440,7 +440,10 @@ def task(index, selected_files,application_param,reservoir_param,output_path,job
           norm_array=norm_array,
           esn=trained_esn,
           pca_model = pca_model)
-        pred_esn = pd.concat([pred_esn, pred_j_esn], ignore_index=True)
+        if pred_esn is None:
+            pred_esn = pred_j_esn
+        else:
+            pred_esn = pd.concat([pred_esn, pred_j_esn], ignore_index=True)
     
     if not application_param.is_training:
         os.makedirs(output_path + job_id + '_importance', exist_ok = True)
