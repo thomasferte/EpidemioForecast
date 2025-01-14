@@ -245,7 +245,7 @@ def GA_or_randomsearch(path_file, Npop):
         perf_df = perf_df[perf_df['value'] != 'todo']
     
         if(len(perf_df) >= Npop):
-            print("Update result because: " + len(perf_df) + " >= " + Npop)
+            print("Update result because: " + str(len(perf_df)) + " >= " + str(Npop))
             res = perf_df
     
     return res
