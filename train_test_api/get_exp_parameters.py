@@ -37,13 +37,26 @@ def get_exp_parameters(slurm_scenari, test = False):
     method_string = matches.group(1)
     if method_string == "reservoir":
         global_optimizer = "GA"
-        scenari_pipeline = "GeneticSingleIs_GA"
+        
+        if features_string == "epi":
+            scenari_pipeline = "GeneticSingleIs_GA_epidemio"
+        elif features_string == "all":
+            scenari_pipeline = "GeneticSingleIs_GA"
+        else:
+            raise ValueError("features must by 'all' or 'epi'")
+        
+        nb_esn = 3
+        nb_best_trials = 40
     elif method_string == "xgboost":
         global_optimizer = "RS"
         scenari_pipeline = "xgb_pred_RS"
+        nb_esn = 1
+        nb_best_trials = 1
     elif method_string == "enet":
         global_optimizer = "RS"
         scenari_pipeline = "enet_pred_RS"
+        nb_esn = 1
+        nb_best_trials = 1
     else:
         raise ValueError("method must by 'xgboost', 'enet' or 'reservoir'")
 
@@ -73,7 +86,8 @@ def get_exp_parameters(slurm_scenari, test = False):
         "nb_trials_update": nb_trials_update,
         "update": "month",
         "method": method_string,
-        "nb_esn": 3,
+        "nb_esn": nb_esn,
+        "nb_best_trials": nb_best_trials,
         "date": matches.group(2),
         "features": features,
         "global_optimizer": global_optimizer,

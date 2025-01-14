@@ -1,4 +1,3 @@
-import optuna
 import pandas as pd
 from train_test_api.utils import *
 from genetic_algorithm.parallelise_to_csv import *
@@ -7,6 +6,7 @@ from re import match
 
 def TestAlgorithm_for_csv(
   scenari,
+  features,
   output_path,
   data_path,
   study_path,
@@ -40,19 +40,6 @@ def TestAlgorithm_for_csv(
     -------
     None
     """
-    if "epidemio" in scenari :
-        features = ["hosp", "hosp_rolDeriv7",
-                    "P_TOUS_AGES", "P_TOUS_AGES_rolDeriv7",
-                    "P_60_90_PLUS_ANS", "P_60_90_PLUS_ANS_rolDeriv7",
-                    "FRACP_TOUS_AGES", "FRACP_TOUS_AGES_rolDeriv7",
-                    "FRACP_60_90_PLUS_ANS", "FRACP_60_90_PLUS_ANS_rolDeriv7",
-                    "IPTCC.mean",
-                    "Vaccin_1dose",
-                    "URG_covid_19_COUNT", "URG_covid_19_COUNT_rolDeriv7"]
-    else:
-        with open("data/allfeatures", "r") as fp:
-            features = json.load(fp)
-    
     # remove Features
     words_to_remove = []
     if scenari == "GeneticSingleIs_GA_noGironde":
@@ -76,15 +63,15 @@ def TestAlgorithm_for_csv(
     full_list = [(mintraining, trial_id) for mintraining in lsTraining for trial_id in trial_ids]
     # evaluate trials
     for meta in full_list:
-    	trial_id = meta[1]
-    	mintraining = meta[0]
-    	job_id = "trial_"+str(trial_id)+"_train"+str(mintraining)
-    	# get params
-    	params = trials_df[trials_df["job_id"] == trial_id].to_dict(orient="records")[0]
-    	temp = params.pop("value")
-    	temp = params.pop("job_id")
+        trial_id = meta[1]
+        mintraining = meta[0]
+        job_id = "trial_"+str(trial_id)+"_train"+str(mintraining)
+    	# get params 
+        params = trials_df[trials_df["job_id"] == trial_id].to_dict(orient="records")[0]
+        temp = params.pop("value")
+        temp = params.pop("job_id")
     	# get trial
-    	eval_objective_function(
+        eval_objective_function(
     	  units = units,
     	  rm_output_files=False,
     	  params=params,
