@@ -56,7 +56,7 @@ def reevaluate_previous_trials(previous_perf_path, perf_folder, date, data_path,
             try:
                 with open(new_perf_file, 'r') as file:
                     fcntl.flock(file, fcntl.LOCK_EX)  # Acquire an exclusive lock
-                    df_perf = pd.read_csv(new_perf_file)
+                    df_perf = pd.read_csv(new_perf_file, on_bad_lines = "skip")
                     fcntl.flock(file, fcntl.LOCK_UN)
                 
                 dftodo = df_perf[df_perf["value"] == "todo"]
@@ -112,7 +112,7 @@ def reevaluate_previous_trials(previous_perf_path, perf_folder, date, data_path,
                   if value < 999:
                       with open(new_perf_file, 'a+') as file:
                           fcntl.flock(file, fcntl.LOCK_EX)  # Acquire an exclusive lock
-                          df_perf = pd.read_csv(new_perf_file)
+                          df_perf = pd.read_csv(new_perf_file, on_bad_lines = "skip")
                           df_perf.dropna(inplace=True)
                           df_perf.loc[df_perf["job_id"] == job_id_to_do, "value"] = value
                           df_perf.loc[df_perf["job_id"] == job_id_to_do, "optimizer"] = "reevaluate"
