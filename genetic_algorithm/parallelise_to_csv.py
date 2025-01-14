@@ -241,12 +241,12 @@ def GA_or_randomsearch(path_file, Npop):
             perf_df = pd.read_csv(path_file, on_bad_lines = "skip")
             fcntl.flock(file, fcntl.LOCK_UN)
     
-    perf_df = perf_df[perf_df['value'] != 'inprogress']
-    perf_df = perf_df[perf_df['value'] != 'todo']
+        perf_df = perf_df[perf_df['value'] != 'inprogress']
+        perf_df = perf_df[perf_df['value'] != 'todo']
     
-    if(len(perf_df) >= Npop):
-        print("Update result because: " + len(perf_df) + " >= " + Npop)
-        res = perf_df
+        if(len(perf_df) >= Npop):
+            print("Update result because: " + len(perf_df) + " >= " + Npop)
+            res = perf_df
     
     return res
 
