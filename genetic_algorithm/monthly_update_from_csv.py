@@ -138,7 +138,7 @@ def evolutive_hp_csv(array_id, perf_folder, first_perf_file, data_path, scenari,
     files = files.reset_index(drop=True)
     
     ##### iterate through date and reestimate hp if date day is 1 or 2
-    previous_perf_path = perf_folder + first_perf_file
+    previous_perf_path = first_perf_file
     for ind in files.index:
         day = files['day'][ind]
         date = files['date'][ind]
