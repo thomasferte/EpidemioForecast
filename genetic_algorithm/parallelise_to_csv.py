@@ -363,7 +363,7 @@ def features_nbesn_optimizer_from_scenari(scenari):
     return forecast_days, features, global_optimizer ,nb_esn
 
 def csv_sampler(path_file, data_path, output_path, scenari, array_id = 1, Npop = 200, Ne = 100, nb_trials = 3200, date = '2021-03-01', units = 500, pmutQuant = .5, pmutCat = .25, sigma = 1, sigmahalv = 1/10, NbFeaturesPenalty = 0, TournamentFeaturesPenalty = False, Ntournament = 2):
-    
+
     if isinstance(scenari, dict):
         forecast_days = scenari["forecast_days"]
         features = scenari["features"]
@@ -371,28 +371,36 @@ def csv_sampler(path_file, data_path, output_path, scenari, array_id = 1, Npop =
         nb_esn = scenari["nb_esn"]
         ### Define hp distribution
         hp_df = scenari_define_hp_distribution(scenari["scenari_pipeline"], features)
-    
+
     else:
         forecast_days, features, global_optimizer, nb_esn = features_nbesn_optimizer_from_scenari(scenari)
         ### Define hp distribution
         hp_df = scenari_define_hp_distribution(scenari, features)
-        
+
     ### initiate nb_trials_done
     cpt = 0
     while cpt < 100:
-        cpt +=1
+        cpt += 1
         try:
+            # Attempt the function
             perf_df = GA_or_randomsearch(path_file=path_file, Npop=Npop)
-        except:
-            print("GA_or_randomsearch failed, retry")
+            # If it succeeds, break the loop
+            print(f"Success on attempt {cpt}")
+            break
+        except Exception as e:
+            # Handle exceptions and retry after a delay
+            print(f"Attempt {cpt} failed with error: {e}. Retrying...")
             time.sleep(5)
-    
+    else:
+        # This block is executed if the while loop completes without a break
+        print("Failed to succeed after 100 attempts.")
+
     nb_trials_done = len(perf_df)
     ### launch loop
     cpt=-1
     while nb_trials_done < nb_trials:
         cpt += 1
-        print("---- nb job evaluated = ", str(cpt) + "----")
+        print("-------- nb job evaluated = ", str(cpt) + "--------")
         ### determine wether to use GA or random sampling
         perf_df = GA_or_randomsearch(path_file=path_file, Npop=Npop)
         nb_trials_done = len(perf_df)
@@ -406,7 +414,19 @@ def csv_sampler(path_file, data_path, output_path, scenari, array_id = 1, Npop =
                 col_to_keep.append("nbFeaturesSelected")
                 col_to_keep.append("job_id")
                 filtered_perf_df = perf_df.loc[:, col_to_keep]
-                params = genetic_sampler_from_df(perf_df=filtered_perf_df, hp_df=hp_df, Npop=Npop, Ne=Ne, pmutQuant=pmutQuant, pmutCat=pmutCat, sigma=sigma, sigmahalv=sigmahalv, NbFeaturesPenalty = NbFeaturesPenalty, TournamentFeaturesPenalty = TournamentFeaturesPenalty, Ntournament = Ntournament)
+                params = genetic_sampler_from_df(
+                    perf_df=filtered_perf_df,
+                    hp_df=hp_df,
+                    Npop=Npop,
+                    Ne=Ne,
+                    pmutQuant=pmutQuant,
+                    pmutCat=pmutCat,
+                    sigma=sigma,
+                    sigmahalv=sigmahalv,
+                    NbFeaturesPenalty=NbFeaturesPenalty,
+                    TournamentFeaturesPenalty=TournamentFeaturesPenalty,
+                    Ntournament=Ntournament,
+                )
             else:
                 optimizer = "RS"
                 params = random_sampler_from_hp_df(hp_df=hp_df)
@@ -418,7 +438,17 @@ def csv_sampler(path_file, data_path, output_path, scenari, array_id = 1, Npop =
         job_start = datetime.now()
         job_id = "array_" + str(array_id) + "_trial_" + str(cpt) + "_time_" + job_start.strftime("%d_%m_%H_%M_%S")
         # evaluate
-        value = eval_objective_function(params, features = features, data_path = data_path, job_id = job_id, output_path=output_path, min_date_eval=date, units = units, nb_esn=nb_esn, forecast_days = forecast_days)
+        value = eval_objective_function(
+            params,
+            features=features,
+            data_path=data_path,
+            job_id=job_id,
+            output_path=output_path,
+            min_date_eval=date,
+            units=units,
+            nb_esn=nb_esn,
+            forecast_days=forecast_days,
+        )
         job_end = datetime.now()
         delta = job_end - job_start
         ### save results
@@ -432,6 +462,5 @@ def csv_sampler(path_file, data_path, output_path, scenari, array_id = 1, Npop =
         ### save value + dictionnary params inside file
         save_locked_csv(path_file=path_file, df_to_save=df_to_save)
         nb_trials_done += 1
-        
-    return None
 
+    return None
