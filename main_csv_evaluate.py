@@ -24,7 +24,7 @@ first_perf_file = folder_path + slurm_scenari + "_" + str(slurm_job) + ".csv"
 output_path = folder_path + "csv_parallel/"
 
 ### Define GA parameters
-dict_exp_parameters = get_exp_parameters(slurm_scenari=slurm_scenari, test=True)
+dict_exp_parameters = get_exp_parameters(slurm_scenari=slurm_scenari, test=False)
 
 print("-----------------------------------------------")
 print("Running experiment:")

@@ -339,7 +339,7 @@ def pref_on_test_set(dftest, selected_columns, reservoir_param , application_par
     
 def task(index, selected_files,application_param,reservoir_param,output_path,job_id):
     selected_files = selected_files.reset_index()
-    print(str(index) + ' is done by ' + current_process().name + ' on cpu ' + str(psutil.Process().cpu_num()))
+    # print(str(index) + ' is done by ' + current_process().name + ' on cpu ' + str(psutil.Process().cpu_num()))
     file_i = selected_files.full_path[index]
     input_data = pd.read_csv(file_i)
     dftrain = input_data.copy()
@@ -450,7 +450,7 @@ def task(index, selected_files,application_param,reservoir_param,output_path,job
         print("--- Save importance to :" + output_path + job_id + '_importance/ folder')
         importance.to_csv(output_path+ job_id + '_importance/result_job_'+ selected_files.file_name[index],index=False)
 
-    print("--- Save pred_esn to :" + output_path)
+    # print("--- Save pred_esn to :" + output_path)
     pred_esn.to_csv(output_path+ job_id +'/result_job_'+ selected_files.file_name[index],index=False)
     
 
