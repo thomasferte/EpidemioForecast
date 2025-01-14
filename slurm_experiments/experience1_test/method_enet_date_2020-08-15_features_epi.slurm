@@ -4,7 +4,7 @@
 # les directives Slurm vont ici:
 
 # Your job name (displayed by the queue)
-#SBATCH -J method_xgboost_date_2020-06-01_features_epi
+#SBATCH -J method_enet_date_2020-08-15_features_epi
 
 # walltime (hh:mm::ss)
 #SBATCH -t 15:00:00

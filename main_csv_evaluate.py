@@ -9,16 +9,16 @@ slurm_job = os.getenv("SLURM_ARRAY_JOB_ID")
 slurm_scenari = os.getenv("SLURM_JOB_NAME")
 array_id = os.getenv("SLURM_ARRAY_TASK_ID")
 
-## local setup
-slurm_job = "2536874"
-slurm_scenari = "method_reservoir_date_2020-09-01_features_epi"
-array_id = 1
+# ## local setup
+# slurm_job = "2536874"
+# slurm_scenari = "method_reservoir_date_2020-09-01_features_epi"
+# array_id = 1
 
 ### Define folders
-folder_path = "/beegfs/tferte/output/" + slurm_scenari + "/"
+folder_path = "/beegfs/tferte/output/EpidemioForecast/" + slurm_scenari + "/"
 
-## local setup
-folder_path = "output/" + slurm_scenari + "/"
+# ## local setup
+# folder_path = "output/" + slurm_scenari + "/"
 
 first_perf_file = slurm_scenari + "_" + str(slurm_job) + ".csv"
 output_path = folder_path + "csv_parallel/"
@@ -39,9 +39,9 @@ elif slurm_scenari in ["GeneticSingleIs_GA_7", "xgb_pred_RS_7"]:
 else:
     data_path = "../high_dimension_reservoir/data_obfuscated/"
 
-## local setup
-data_path = "data_obfuscated_short/"
-data_path = "data_obfuscated/"
+# ## local setup
+# data_path = "data_obfuscated_short/"
+# data_path = "data_obfuscated/"
 
 print("------- first optimisation ------------")
 csv_sampler(

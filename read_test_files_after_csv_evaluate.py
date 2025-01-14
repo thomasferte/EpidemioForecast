@@ -6,10 +6,8 @@ import glob
 array_id = os.getenv("SLURM_ARRAY_TASK_ID")
 
 # Define folder_path and folder_list
-folder_path = "/beegfs/tferte/output/"
+folder_path = "/beegfs/tferte/output/EpidemioForecast/"
 directories = [d for d in os.listdir(folder_path) if os.path.isdir(os.path.join(folder_path, d))]
-# Filter directories containing "GAHPDEF"
-folder_list = [d for d in directories if "GAHPDEF" in d]
 
 # Get the folder_i based on array_id
 folder_i = folder_list[int(array_id)]
@@ -49,7 +47,7 @@ dfres = pd.concat(df_list, ignore_index=True)
 
 # Save the resulting dataframe as an RDS file
 # dfres.to_csv(folder_path + folder_i + "/" + folder_i + "_combined.csv", index = False)
-dfres.to_csv("/beegfs/tferte/output/aggregated_results/" + folder_i + "_hyperparameters.csv", index = False)
+dfres.to_csv("/beegfs/tferte/output/EpidemioForecast/aggregated_results/" + folder_i + "_hyperparameters.csv", index = False)
 
 ##### Prediction
 # Create an empty list to store dataframes
@@ -74,7 +72,7 @@ dfres = pd.concat(df_list, ignore_index=True)
 
 # Save the resulting dataframe as an RDS file
 # dfres.to_csv(folder_path + folder_i + "/" + folder_i + "_combined.csv", index = False)
-dfres.to_csv("/beegfs/tferte/output/aggregated_results/" + folder_i + "_combined.csv", index = False)
+dfres.to_csv("/beegfs/tferte/output/EpidemioForecast/aggregated_results/" + folder_i + "_combined.csv", index = False)
 
 
 ##### Feature importance
@@ -100,6 +98,6 @@ if folder_i not in ["2000units_20reservoir", "GeneticSingleIs_GA_20esn", "Geneti
     
     # Save the resulting dataframe as an RDS file
     # dfres.to_csv(folder_path + folder_i + "/" + folder_i + "_combined.csv", index = False)
-    dfres.to_csv("/beegfs/tferte/output/aggregated_results/" + folder_i + "_importance_combined.csv", index = False)
+    dfres.to_csv("/beegfs/tferte/output/EpidemioForecast/aggregated_results/" + folder_i + "_importance_combined.csv", index = False)
 
 

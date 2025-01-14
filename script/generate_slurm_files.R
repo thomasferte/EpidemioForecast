@@ -136,7 +136,7 @@ generate_slurm_exp1_test <- function(folder, method, date, features, delayed) {
 
 df_exp1 <- list(
   method = c("enet", "xgboost", "reservoir"),
-  date = c("2021-03-01", "2020-06-01"),
+  date = c("2021-03-01", "2020-08-15"),
   features = c("epi", "all")
 ) %>%
   expand.grid() %>%

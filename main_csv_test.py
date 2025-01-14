@@ -9,19 +9,19 @@ import glob
 slurm_scenari = os.getenv('SLURM_JOB_NAME')
 array_id = os.getenv('SLURM_ARRAY_TASK_ID')
 
-## local setup
-slurm_scenari = "method_reservoir_date_2020-09-01_features_epi"
-array_id = 1
+# ## local setup
+# slurm_scenari = "method_reservoir_date_2020-09-01_features_epi"
+# array_id = 1
 
 print(slurm_scenari + " " + str(array_id))
 
 # Get the params files
 dict_exp_parameters = get_exp_parameters(slurm_scenari=slurm_scenari, test=True)
 
-output_path = "/beegfs/tferte/output/"
+output_path = "/beegfs/tferte/output/EpidemioForecast/"
 
-## local setup
-output_path = "output/"
+# ## local setup
+# output_path = "output/"
 
 scenari_params_folder = output_path + slurm_scenari + "/*.csv"
 csv_files = glob.glob(scenari_params_folder)
@@ -33,8 +33,8 @@ elif slurm_scenari in ["GeneticSingleIs_GA_7", "xgb_pred_RS_7"]:
 else :
     data_path="../high_dimension_reservoir/data_obfuscated/"
 
-## local setup
-data_path = "data_obfuscated/"
+# ## local setup
+# data_path = "data_obfuscated/"
 
 # evaluate algorithm depending on array
 file_i = csv_files[int(array_id)]

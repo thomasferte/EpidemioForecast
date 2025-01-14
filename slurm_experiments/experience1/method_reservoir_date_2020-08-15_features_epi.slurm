@@ -4,11 +4,11 @@
 # les directives Slurm vont ici:
 
 # Your job name (displayed by the queue)
-#SBATCH -J method_reservoir_date_2020-06-01_features_all
+#SBATCH -J method_reservoir_date_2020-08-15_features_epi
 
 # walltime (hh:mm::ss)
 #SBATCH -t 06:30:00
-#SBATCH --begin=now+48hours
+#SBATCH --begin=now+24hours
 
 
 # change working directory

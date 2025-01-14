@@ -4,10 +4,11 @@
 # les directives Slurm vont ici:
 
 # Your job name (displayed by the queue)
-#SBATCH -J method_reservoir_date_2020-06-01_features_epi
+#SBATCH -J method_reservoir_date_2020-08-15_features_all
 
 # walltime (hh:mm::ss)
-#SBATCH -t 15:00:00
+#SBATCH -t 06:30:00
+#SBATCH --begin=now+48hours
 
 
 # change working directory
@@ -17,9 +18,9 @@
 #SBATCH -o /beegfs/tferte/std_out/%j_%a_%x.out # standard out goes to this file
 #SBATCH -e /beegfs/tferte/std_err/%j_%a_%x.err # standard err goes to this file
 
-#SBATCH --array 0-10
+#SBATCH --array 0-199
 #SBATCH --ntasks 1
-#SBATCH --cpus-per-task 10
+#SBATCH --cpus-per-task 5
 #SBATCH --mem-per-cpu=2560
 
 # fin des directives PBS
@@ -49,4 +50,4 @@ cd /home/tferte/EpidemioForecast
 
 ulimit -c 0
 
-python main_csv_test.py
+python main_csv_evaluate.py
