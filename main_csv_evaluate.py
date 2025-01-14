@@ -15,6 +15,7 @@ tracker = EmissionsTracker(
     output_dir="/beegfs/tferte/output/EpidemioForecast/emissions_logs",
     output_file=output_file,
     allow_multiple_runs=True,
+    country_iso_code="FRA"
 )
 
 # ## local setup
