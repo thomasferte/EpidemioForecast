@@ -2,6 +2,7 @@ from train_test_api.utils import *
 from train_test_api.get_exp_parameters import *
 from genetic_algorithm.parallelise_to_csv import *
 from genetic_algorithm.monthly_update_from_csv import *
+from codecarbon import EmissionsTracker
 import os
 
 ##### define objective function #####
@@ -9,10 +10,16 @@ slurm_job = os.getenv("SLURM_ARRAY_JOB_ID")
 slurm_scenari = os.getenv("SLURM_JOB_NAME")
 array_id = os.getenv("SLURM_ARRAY_TASK_ID")
 
+output_file = f"emissions_evaluate_id_{slurm_job}_name_{slurm_scenari}_array_{array_id}.csv"
+tracker = EmissionsTracker(output_dir="/beegfs/tferte/output/EpidemioForecast/emissions_logs", output_file=output_file)
+
 # ## local setup
 # slurm_job = "2536874"
 # slurm_scenari = "method_reservoir_date_2020-09-01_features_epi"
 # array_id = 1
+
+# Start tracking
+tracker.start()
 
 ### Define folders
 folder_path = "/beegfs/tferte/output/EpidemioForecast/" + slurm_scenari + "/"
@@ -94,3 +101,6 @@ if slurm_scenari not in [
         TournamentFeaturesPenalty=dict_exp_parameters["TournamentFeaturesPenalty"],
         Ntournament=dict_exp_parameters["Ntournament"],
     )
+
+# Stop tracking
+tracker.stop()
