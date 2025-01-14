@@ -234,7 +234,7 @@ def GA_or_randomsearch(path_file, Npop):
     print("--- Initiate GA_or_randomsearch function with path " + path_file)
     res = []
     bool_file_exists = os.path.exists(path_file)
-    print("bool_file_exists status: " + bool_file_exists)
+    print("bool_file_exists status: " + str(bool_file_exists))
     if(bool_file_exists):
         with open(path_file, 'r') as file:
             fcntl.flock(file, fcntl.LOCK_EX)  # Acquire an exclusive lock
@@ -464,6 +464,7 @@ def csv_sampler(path_file, data_path, output_path, scenari, array_id = 1, Npop =
         params['optimizer'] = optimizer
         df_to_save = pd.DataFrame.from_dict([params])
         ### save value + dictionnary params inside file
+        print("--- csv_sampler final file saved at: path_file")
         save_locked_csv(path_file=path_file, df_to_save=df_to_save)
         nb_trials_done += 1
 

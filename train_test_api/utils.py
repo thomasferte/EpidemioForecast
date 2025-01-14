@@ -447,8 +447,10 @@ def task(index, selected_files,application_param,reservoir_param,output_path,job
     
     if not application_param.is_training:
         os.makedirs(output_path + job_id + '_importance', exist_ok = True)
+        print("--- Save importance to :" + output_path + job_id + '_importance/ folder')
         importance.to_csv(output_path+ job_id + '_importance/result_job_'+ selected_files.file_name[index],index=False)
 
+    print("--- Save pred_esn to :" + output_path)
     pred_esn.to_csv(output_path+ job_id +'/result_job_'+ selected_files.file_name[index],index=False)
     
 

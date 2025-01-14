@@ -30,8 +30,10 @@ def reevaluate_previous_trials(previous_perf_path, perf_folder, date, data_path,
                     # Check the number of lines
                     file_size = file.tell()  # Move to the beginning of the file
                     if file_size == 0:
+                        print("--- reevaluate_previous_trials save top_trials at: " + new_perf_file)
                         top_trials.to_csv(new_perf_file, index=False, mode = "a", header = True)
                     else :
+                        print("--- reevaluate_previous_trials save top_trials at: " + new_perf_file)
                         top_trials.to_csv(new_perf_file, index=False, mode = "a", header = False)
                     fcntl.flock(file, fcntl.LOCK_UN)
             

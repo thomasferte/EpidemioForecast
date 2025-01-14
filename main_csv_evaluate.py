@@ -20,7 +20,7 @@ folder_path = "/beegfs/tferte/output/EpidemioForecast/" + slurm_scenari + "/"
 # ## local setup
 # folder_path = "output/" + slurm_scenari + "/"
 
-first_perf_file = slurm_scenari + "_" + str(slurm_job) + ".csv"
+first_perf_file = folder_path + slurm_scenari + "_" + str(slurm_job) + ".csv"
 output_path = folder_path + "csv_parallel/"
 
 ### Define GA parameters
@@ -47,7 +47,7 @@ print("------- first optimisation ------------")
 csv_sampler(
     units=dict_exp_parameters["units"],
     date=dict_exp_parameters["date"],
-    path_file=folder_path + first_perf_file,
+    path_file=first_perf_file,
     data_path=data_path,
     output_path=output_path + "first_optimisation/",
     scenari=dict_exp_parameters,
