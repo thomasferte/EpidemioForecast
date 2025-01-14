@@ -231,20 +231,24 @@ def save_locked_csv(path_file, df_to_save):
     return None
 
 def GA_or_randomsearch(path_file, Npop):
-  res = []
-  bool_file_exists = os.path.exists(path_file)
-  if(bool_file_exists):
-      with open(path_file, 'r') as file:
-           fcntl.flock(file, fcntl.LOCK_EX)  # Acquire an exclusive lock
-           perf_df = pd.read_csv(path_file, on_bad_lines = "skip")
-           fcntl.flock(file, fcntl.LOCK_UN)
+    print("--- Initiate GA_or_randomsearch function with path " + path_file)
+    res = []
+    bool_file_exists = os.path.exists(path_file)
+    print("bool_file_exists status: " + bool_file_exists)
+    if(bool_file_exists):
+        with open(path_file, 'r') as file:
+            fcntl.flock(file, fcntl.LOCK_EX)  # Acquire an exclusive lock
+            perf_df = pd.read_csv(path_file, on_bad_lines = "skip")
+            fcntl.flock(file, fcntl.LOCK_UN)
     
-      perf_df = perf_df[perf_df['value'] != 'inprogress']
-      perf_df = perf_df[perf_df['value'] != 'todo']
-      if(len(perf_df) >= Npop):
-          res = perf_df
-  
-  return res
+    perf_df = perf_df[perf_df['value'] != 'inprogress']
+    perf_df = perf_df[perf_df['value'] != 'todo']
+    
+    if(len(perf_df) >= Npop):
+        print("Update result because: " + len(perf_df) + " >= " + Npop)
+        res = perf_df
+    
+    return res
 
 def genetic_sampler_from_df(perf_df, hp_df, Npop, Ne, pmutQuant = .5, pmutCat = .25, sigma = 1, sigma_halv_thresh = 6, sigmahalv = 1/10, NbFeaturesPenalty = 0, TournamentFeaturesPenalty = False, Ntournament = 2):
     genetic_sampler = CsvGeneticAlgorithm(hp_df=hp_df, perf_df=perf_df, Npop = Npop, Ne = Ne, pmutQuant=pmutQuant, pmutCat=pmutCat, sigma=sigma, sigma_halv_thresh=sigma_halv_thresh, sigmahalv=sigmahalv, NbFeaturesPenalty = NbFeaturesPenalty, TournamentFeaturesPenalty = TournamentFeaturesPenalty, Ntournament = Ntournament)
