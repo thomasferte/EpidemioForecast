@@ -17,7 +17,8 @@ tracker = OfflineEmissionsTracker(
     allow_multiple_runs=True,
     country_iso_code="FRA",
     project_name=slurm_scenari,
-    experiment_id=array_id
+    experiment_id=array_id,
+    log_level="error"
 )
 
 # ## local setup
