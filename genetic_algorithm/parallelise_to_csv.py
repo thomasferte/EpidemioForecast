@@ -8,6 +8,8 @@ import os
 import pandas as pd
 from datetime import datetime
 from shutil import rmtree
+from shutil import move
+import uuid
 
 ##### functions
 
@@ -209,26 +211,35 @@ def eval_objective_function(params, features, output_path, data_path, job_id, is
     return fct_value
 
 def save_locked_csv(path_file, df_to_save):
-    # if file didn't exist, read it to check and write with header if needed
-    if(not os.path.exists(path_file)):
-        with open(path_file, 'a+') as file:
-            fcntl.flock(file, fcntl.LOCK_EX)  # Acquire an exclusive lock
-            # Check the number of lines
-            file_size = file.tell()  # Move to the beginning of the file
-            if file_size == 0:
-                df_to_save.to_csv(path_file, index=False, mode = "a", header = True)
-            else :
-                df_to_save.to_csv(path_file, index=False, mode = "a", header = False)
-            fcntl.flock(file, fcntl.LOCK_UN)
-    # file did exist, write without header
-    else :
-        with open(path_file, "r+") as file:
-            fcntl.flock(file, fcntl.LOCK_EX)
-            file.seek(0, 2)
-            df_to_save.to_csv(path_file, index=False, mode = "a", header = False)
-            fcntl.flock(file, fcntl.LOCK_UN)
+    # Generate a temporary file name to ensure atomicity
+    temp_file = os.path.join(os.path.dirname(path_file), f"temp_{uuid.uuid4().hex}.csv")
+    
+    # Create or load the existing data
+    if os.path.exists(path_file):
+        # If the file exists, read the existing data
+        existing_df = pd.read_csv(path_file)
+        # Concatenate the new rows to the existing dataframe
+        combined_df = pd.concat([existing_df, df_to_save], ignore_index=True)
+    else:
+        # If the file doesn't exist, use the new dataframe as is
+        combined_df = df_to_save
+    
+    # Write to the temporary file with locking
+    combined_df.to_csv(temp_file, index=False, mode="w", header=True)
+    
+    try:
+        # After saving to temp file, atomically rename it to the target path
+        move(temp_file, path_file)
+        print(f"--- Final file saved at: {path_file}")
+    except Exception as e:
+        print(f"Error during atomic file save: {e}")
+        # Clean up the temporary file if something goes wrong
+        if os.path.exists(temp_file):
+            os.remove(temp_file)
     
     return None
+
+
 
 def GA_or_randomsearch(path_file, Npop):
     print("--- Initiate GA_or_randomsearch function with path " + path_file)
