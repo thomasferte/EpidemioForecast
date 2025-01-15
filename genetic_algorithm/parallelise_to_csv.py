@@ -1,4 +1,4 @@
-import fcntl
+import time
 import json
 import random
 from train_test_api.utils import *
@@ -211,51 +211,93 @@ def eval_objective_function(params, features, output_path, data_path, job_id, is
     return fct_value
 
 def save_locked_csv(path_file, df_to_save):
+    """
+    Attempts to save a DataFrame to a CSV file atomically, retrying up to 60 times if necessary.
+    """
     # Generate a temporary file name to ensure atomicity
     temp_file = os.path.join(os.path.dirname(path_file), f"temp_{uuid.uuid4().hex}.csv")
+    success = False
     
-    # Create or load the existing data
-    if os.path.exists(path_file):
-        # If the file exists, read the existing data
-        existing_df = pd.read_csv(path_file)
-        # Concatenate the new rows to the existing dataframe
-        combined_df = pd.concat([existing_df, df_to_save], ignore_index=True)
-    else:
+    for attempt in range(1, 61):  # Retry up to 60 times
+        try:
+            # Create or load the existing data
+            if os.path.exists(path_file):
+                # If the file exists, read the existing data
+                print(f"Attempt {attempt}: File exists. Reading {path_file}")
+                existing_df = pd.read_csv(path_file)
+                # Concatenate the new rows to the existing dataframe
+                combined_df = pd.concat([existing_df, df_to_save], ignore_index=True)
+                # Write to the temporary file
+                combined_df.to_csv(temp_file, index=False, mode="w", header=True)
+                move(temp_file, path_file)
+                print(f"--- Final file saved at: {path_file}")
+                
+                success = True
+                
+                break
+            
+        except Exception as e:
+            print(f"Attempt {attempt} failed with error: {e}. Retrying...")
+
+        # Wait for a random delay between 0 and 2 seconds before retrying
+        delay = random.uniform(0, 2)
+        print(f"Retrying in {delay:.2f} seconds...")
+        time.sleep(delay)
+
+    if not success:
         # If the file doesn't exist, use the new dataframe as is
-        combined_df = df_to_save
-    
-    # Write to the temporary file with locking
-    combined_df.to_csv(temp_file, index=False, mode="w", header=True)
-    
-    try:
-        # After saving to temp file, atomically rename it to the target path
+        print(f"File does not exist. Creating new file.")
+        df_to_save.to_csv(temp_file, index=False, mode="w", header=True)
         move(temp_file, path_file)
         print(f"--- Final file saved at: {path_file}")
-    except Exception as e:
-        print(f"Error during atomic file save: {e}")
-        # Clean up the temporary file if something goes wrong
-        if os.path.exists(temp_file):
-            os.remove(temp_file)
     
     return None
 
 
 
+
 def GA_or_randomsearch(path_file, Npop):
-    print("--- Initiate GA_or_randomsearch function with path " + path_file)
+    """
+    Attempts to access the file at 'path_file' up to 60 times with random delays between retries.
+    If the file exists and meets the criteria, returns the filtered DataFrame.
+    """
+    print(f"--- Initiate GA_or_randomsearch function with path {path_file}")
     res = []
-    bool_file_exists = os.path.exists(path_file)
-    print("bool_file_exists status: " + str(bool_file_exists))
-    if(bool_file_exists):
-        perf_df = pd.read_csv(path_file, on_bad_lines = "skip")
-        perf_df = perf_df[perf_df['value'] != 'inprogress']
-        perf_df = perf_df[perf_df['value'] != 'todo']
+
+    for attempt in range(1, 61):  # Retry up to 60 times
+        try:
+            print(f"Attempt {attempt} to access {path_file}")
+            bool_file_exists = os.path.exists(path_file)
+            print(f"bool_file_exists status: {bool_file_exists}")
+            
+            if bool_file_exists:
+                # Attempt to read the file
+                perf_df = pd.read_csv(path_file, on_bad_lines="skip")
+                perf_df = perf_df[perf_df['value'] != 'inprogress']
+                perf_df = perf_df[perf_df['value'] != 'todo']
+
+                if len(perf_df) >= Npop:
+                    print(f"Update result because: {len(perf_df)} >= {Npop}")
+                    res = perf_df
+                
+                break  # Exit loop if successful
+
+            # If the file does not exist or does not meet criteria, retry after delay
+            delay = random.uniform(0, 2)  # Random delay between 0 and 2 seconds
+            print(f"File not ready or insufficient data. Retrying in {delay:.2f} seconds...")
+            time.sleep(delay)
+        
+        except Exception as e:
+            print(f"Error accessing or processing {path_file} on attempt {attempt}: {e}")
+            delay = random.uniform(0, 2)  # Random delay between 1 and 2 seconds
+            print(f"Retrying in {delay:.2f} seconds...")
+            time.sleep(delay)
     
-        if(len(perf_df) >= Npop):
-            print("Update result because: " + str(len(perf_df)) + " >= " + str(Npop))
-            res = perf_df
+    else:
+        print(f"Failed to access a valid file after 60 attempts.")
     
     return res
+
 
 def genetic_sampler_from_df(perf_df, hp_df, Npop, Ne, pmutQuant = .5, pmutCat = .25, sigma = 1, sigma_halv_thresh = 6, sigmahalv = 1/10, NbFeaturesPenalty = 0, TournamentFeaturesPenalty = False, Ntournament = 2):
     genetic_sampler = CsvGeneticAlgorithm(hp_df=hp_df, perf_df=perf_df, Npop = Npop, Ne = Ne, pmutQuant=pmutQuant, pmutCat=pmutCat, sigma=sigma, sigma_halv_thresh=sigma_halv_thresh, sigmahalv=sigmahalv, NbFeaturesPenalty = NbFeaturesPenalty, TournamentFeaturesPenalty = TournamentFeaturesPenalty, Ntournament = Ntournament)
