@@ -96,8 +96,8 @@ def reevaluate_previous_trials(previous_perf_path, perf_folder, date, data_path,
                         shutil.move(temp_file, new_perf_file)
                         print(f"Job {job_id_to_do} processed and result saved.")
                         break
-                except pd.errors.EmptyDataError:
-                    print("Failed to reevaluate objective function, retrying...")
+                except Exception as e:
+                    print(f"Failed to reevaluate objective function: {e}. Retrying...")
                     value = 1000
                     nb_try += 1
                     time.sleep(2)
