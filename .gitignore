@@ -3,6 +3,7 @@
 .RData
 .Ruserdata
 .ipynb_checkpoints*
+*.Rproj
 
 data_obfuscated*
 *_pycache_*
