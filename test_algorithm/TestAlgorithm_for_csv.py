@@ -1,8 +1,7 @@
 import pandas as pd
 from train_test_api.utils import *
 from genetic_algorithm.parallelise_to_csv import *
-from re import sub
-from re import match
+from re import search
 
 def TestAlgorithm_for_csv(
   scenari,
@@ -88,22 +87,24 @@ def TestAlgorithm_for_csv(
 
 
 def get_date_plus_14_from_subfolder(subfolder, forecast_days=14):
-  pattern = r'^\d{4}-\d{2}-\d{2}$'
-  if match(pattern, subfolder):
-    print(f"'{subfolder}' matches the 'YYYY-MM-DD' format.")
-    temp_min_date_eval = subfolder
-  else:
-    print(f"'{subfolder}' does not match the 'YYYY-MM-DD' format.")
-    temp_min_date_eval = '2021-03-01'
-  # add 14 days to date to avoid overfit
-  # Convert the min_date_eval to a datetime object
-  date_obj = datetime.strptime(temp_min_date_eval, '%Y-%m-%d')
-  # Add 14 days
-  new_date_obj = date_obj + timedelta(days=forecast_days)
-  # Format the result back to "YYYY-MM-DD" format
-  min_date_eval = new_date_obj.strftime('%Y-%m-%d')
+    pattern = r'\d{4}-\d{2}-\d{2}'
+    match = search(pattern, subfolder)
+    
+    if match:
+        # If the pattern matches, extract the date
+        temp_min_date_eval = match.group(0)
+    else:
+        # If no match is found, raise a ValueError
+        raise ValueError(f"'{subfolder}' does not contain a valid 'YYYY-MM-DD' format.")
+    
+    # add 14 days to date to avoid overfit
+    # Convert the min_date_eval to a datetime object
+    date_obj = datetime.strptime(temp_min_date_eval, '%Y-%m-%d')
+    # Add 14 days
+    new_date_obj = date_obj + timedelta(days=forecast_days)
+    # Format the result back to "YYYY-MM-DD" format
+    min_date_eval = new_date_obj.strftime('%Y-%m-%d')
+    print("Original Date:", temp_min_date_eval)
+    print(f"Date after adding {forecast_days} days:", min_date_eval)
   
-  print("Original Date:", temp_min_date_eval)
-  print("Date after adding ", forecast_days, " days:", min_date_eval)
-  
-  return min_date_eval
+    return min_date_eval
