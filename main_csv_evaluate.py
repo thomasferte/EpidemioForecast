@@ -21,10 +21,10 @@ tracker = OfflineEmissionsTracker(
     log_level="error"
 )
 
-# ## local setup
-# slurm_job = "2536874"
-# slurm_scenari = "method_reservoir_date_2020-09-01_features_epi"
-# array_id = 1
+## local setup
+slurm_job = "2536874"
+slurm_scenari = "method_enet_date_2020-09-01_features_epi"
+array_id = 1
 
 # Start tracking
 tracker.start()
@@ -32,14 +32,14 @@ tracker.start()
 ### Define folders
 folder_path = "/beegfs/tferte/output/EpidemioForecast/" + slurm_scenari + "/"
 
-# ## local setup
-# folder_path = "output/" + slurm_scenari + "/"
+## local setup
+folder_path = "output/" + slurm_scenari + "/"
 
 first_perf_file = folder_path + slurm_scenari + "_" + str(slurm_job) + ".csv"
 output_path = folder_path + "csv_parallel/"
 
 ### Define GA parameters
-dict_exp_parameters = get_exp_parameters(slurm_scenari=slurm_scenari, test=False)
+dict_exp_parameters = get_exp_parameters(slurm_scenari=slurm_scenari, test=True)
 
 print("-----------------------------------------------")
 print("Running experiment:")
@@ -55,7 +55,7 @@ else:
     data_path = "../high_dimension_reservoir/data_obfuscated/"
 
 # ## local setup
-# data_path = "data_obfuscated_short/"
+data_path = "data_obfuscated_short/"
 # data_path = "data_obfuscated/"
 
 print("------- first optimisation ------------")

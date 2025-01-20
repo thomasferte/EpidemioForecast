@@ -7,7 +7,7 @@
 #SBATCH -J method_xgboost_date_2020-08-15_features_all
 
 # walltime (hh:mm::ss)
-#SBATCH -t 06:30:00
+#SBATCH -t 20:00:00
 #SBATCH --begin=now+44hours
 
 
