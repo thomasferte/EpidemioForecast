@@ -91,13 +91,13 @@ def eval_objective_function(params, features, output_path, data_path, job_id, is
         seasonality_mode = None
     # xgb
     if("n_estimators" in params.keys()):
-        n_estimators = int(params["n_estimators"])
+        n_estimators = int(float(params["n_estimators"]))
         model = "xgb"
         nb_esn = 1
     else :
         n_estimators = None
     if("max_depth" in params.keys()):
-        max_depth = int(params["max_depth"])
+        max_depth = int(float(params["max_depth"]))
     else :
         max_depth = None
     if("learning_rate" in params.keys()):
@@ -138,12 +138,12 @@ def eval_objective_function(params, features, output_path, data_path, job_id, is
     else :
         ridge = None
     if("seed" in params.keys()):
-        seed = int(params["seed"])
+        seed = int(float(params["seed"]))
         nb_esn = 1
     else :
         seed = None
     if("nb_features" in params.keys()):
-        nb_features = int(params["nb_features"])
+        nb_features = int(float(params["nb_features"]))
     else :
         nb_features = 0
     if("input_scaling" in params.keys()):
