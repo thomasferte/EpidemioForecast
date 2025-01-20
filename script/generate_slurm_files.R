@@ -3,6 +3,11 @@ library(dplyr)
 ##### GeneticSingleIs_GA_GAHPDEF #####
 generate_slurm_exp1 <- function(folder, method, date, features, delayed) {
   slurm_scenari <- glue::glue("method_{method}_date_{date}_features_{features}")
+  if(method == "xgboost"){
+    duration = "20:00:00"
+  } else {
+    duration = "06:30:00"
+  }
   res <- glue::glue(
     '#!/bin/bash
 
@@ -13,7 +18,7 @@ generate_slurm_exp1 <- function(folder, method, date, features, delayed) {
   #SBATCH -J {slurm_scenari}
 
   # walltime (hh:mm::ss)
-  #SBATCH -t 06:30:00
+  #SBATCH -t {duration}
   #SBATCH --begin=now+{delayed}hours
 
 
@@ -71,6 +76,15 @@ generate_slurm_exp1 <- function(folder, method, date, features, delayed) {
 generate_slurm_exp1_test <- function(folder, method, date, features, delayed) {
   slurm_scenari <- glue::glue("method_{method}_date_{date}_features_{features}")
 
+
+  if(date == "2021-03-01"){
+    max_array = "10"
+  } else if(date =="2020-08-15"){
+    max_array = "17"
+  } else {
+    stop("Date unknown")
+  }
+
   res <- glue::glue(
     '#!/bin/bash
 
@@ -91,7 +105,7 @@ generate_slurm_exp1_test <- function(folder, method, date, features, delayed) {
     #SBATCH -o /beegfs/tferte/std_out/%j_%a_%x.out # standard out goes to this file
     #SBATCH -e /beegfs/tferte/std_err/%j_%a_%x.err # standard err goes to this file
 
-    #SBATCH --array 0-10
+    #SBATCH --array 0-{max_array}
     #SBATCH --ntasks 1
     #SBATCH --cpus-per-task 10
     #SBATCH --mem-per-cpu=2560

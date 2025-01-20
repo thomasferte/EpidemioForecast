@@ -7,8 +7,8 @@
 #SBATCH -J method_xgboost_date_2021-03-01_features_epi
 
 # walltime (hh:mm::ss)
-#SBATCH -t 06:30:00
-#SBATCH --begin=now+40hours
+#SBATCH -t 20:00:00
+#SBATCH --begin=now+8hours
 
 
 # change working directory
