@@ -8,7 +8,7 @@
 
 # walltime (hh:mm::ss)
 #SBATCH -t 06:30:00
-#SBATCH --begin=now+16hours
+#SBATCH --begin=now
 
 
 # change working directory
