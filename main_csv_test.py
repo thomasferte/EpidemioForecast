@@ -3,6 +3,7 @@ from train_test_api.get_exp_parameters import *
 from test_algorithm.TestAlgorithm_for_csv import *
 from genetic_algorithm.parallelise_to_csv import *
 from genetic_algorithm.get_GA_parameters_from_scenari import *
+from codecarbon import OfflineEmissionsTracker
 import os
 import glob
 
@@ -14,6 +15,20 @@ array_id = os.getenv('SLURM_ARRAY_TASK_ID')
 # array_id = 1
 
 print(slurm_scenari + " " + str(array_id))
+
+output_file = f"emissions_evaluate_id_test_name_{slurm_scenari}_array_{array_id}.csv"
+tracker = OfflineEmissionsTracker(
+    output_dir="/beegfs/tferte/output/EpidemioForecast/emissions_logs",
+    output_file=output_file,
+    allow_multiple_runs=True,
+    country_iso_code="FRA",
+    project_name=slurm_scenari,
+    experiment_id=array_id,
+    log_level="error"
+)
+
+# Start tracking
+tracker.start()
 
 # Get the params files
 dict_exp_parameters = get_exp_parameters(slurm_scenari=slurm_scenari, test=True)
@@ -55,3 +70,6 @@ TestAlgorithm_for_csv(
   min_date_eval=min_date_eval,
   units = dict_exp_parameters["units"]
   )
+
+# Stop tracking
+tracker.stop()
