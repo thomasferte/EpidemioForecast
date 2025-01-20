@@ -48,7 +48,7 @@ export MKL_NUM_THREADS=1
 
 module load build/conda/4.10
 conda activate testenv
-cd /home/tferte/ChallengesRCGA
+cd /home/tferte/EpidemioForecast
 
 ulimit -c 0
 
