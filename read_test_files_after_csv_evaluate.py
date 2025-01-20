@@ -30,7 +30,7 @@ if folder_i == "emissions_logs":
   
   # Concatenate and save
   dfres = pd.concat(df_list, ignore_index=True)
-  dfres.to_csv("/beegfs/tferte/output/EpidemioForecast/aggregated_results/" + folder_i + "_emissions_logs.csv", index = False)
+  dfres.to_csv("/beegfs/tferte/output/EpidemioForecast/aggregated_results/emissions_logs.csv", index = False)
 
 else :
   # List all files in the specified folder
