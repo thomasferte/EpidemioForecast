@@ -10,14 +10,15 @@ slurm_job = os.getenv("SLURM_ARRAY_JOB_ID")
 slurm_scenari = os.getenv("SLURM_JOB_NAME")
 array_id = os.getenv("SLURM_ARRAY_TASK_ID")
 
-output_file = f"emissions_evaluate_id_{slurm_job}_name_{slurm_scenari}.csv"
+output_file = f"emissions_evaluate_id_{slurm_job}_name_{slurm_scenari}_array_{array_id}.csv"
 tracker = OfflineEmissionsTracker(
     output_dir="/beegfs/tferte/output/EpidemioForecast/emissions_logs",
     output_file=output_file,
     allow_multiple_runs=True,
     country_iso_code="FRA",
     project_name=slurm_scenari,
-    experiment_id=array_id
+    experiment_id=array_id,
+    log_level="error"
 )
 
 # ## local setup
