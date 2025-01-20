@@ -22,7 +22,7 @@ if folder_i == "emissions_logs":
   for file in files:
     print(file)
     # Read the data from the file using pandas
-    df_res = pd.read_csv(folder_path_glob + file, on_bad_lines = 'skip')
+    df_res = pd.read_csv(file, on_bad_lines = 'skip')
     # add file path
     df_res['file_hp'] = file
     # Append the dataframe to df_list
