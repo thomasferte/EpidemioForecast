@@ -79,8 +79,8 @@ generate_slurm_exp1_test <- function(folder, method, date, features, delayed) {
 
   if(date == "2021-03-01"){
     max_array = "10"
-  } else if(date =="2020-08-15"){
-    max_array = "17"
+  } else if(date =="2020-09-02"){
+    max_array = "16"
   } else {
     stop("Date unknown")
   }
@@ -150,7 +150,7 @@ generate_slurm_exp1_test <- function(folder, method, date, features, delayed) {
 
 df_exp1 <- list(
   method = c("enet", "xgboost", "reservoir"),
-  date = c("2021-03-01", "2020-08-15"),
+  date = c("2021-03-01", "2020-09-02"),
   features = c("epi", "all")
 ) %>%
   expand.grid() %>%
