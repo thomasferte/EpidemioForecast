@@ -239,6 +239,7 @@ def GA_or_randomsearch(path_file, Npop):
         perf_df = pd.read_csv(path_file, on_bad_lines = "skip")
         perf_df = perf_df[perf_df['value'] != 'inprogress']
         perf_df = perf_df[perf_df['value'] != 'todo']
+        perf_df = perf_df[pd.to_numeric(perf_df['value'], errors='coerce') != 1000]
     
         if(len(perf_df) >= Npop):
             print("Update result because: " + str(len(perf_df)) + " >= " + str(Npop))
