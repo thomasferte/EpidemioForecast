@@ -19,7 +19,37 @@ path_experience1 <- here::here("output/experience1/aggregated_results/")
 color_methods <- c("#94C9A9", "#FB8B24", "#454372", "black", "darkgrey")
 ```
 
-# PREDICTION
+# Introduction
+
+Goal = provide some results to write the article of the SARS-CoV-2 forecast from an implementation science perspective.
+
+Hypothesis to test :
+
+- Simple models like elastic-net perform better when little information is available
+- Feature selection based on epidemic knowledge performs better when little information is available
+- More complex models like xgboost or reservoir computing show an advantage only on the late phase of the epidemic
+- Simple models are faster and have lighter carbon footprint
+
+# Methods
+
+Same setting as ICML paper.
+
+We compare different scenario :
+
+- 3 methods : elastic-net, xgboost, reservoir computing
+- 2 features selection : all features provided (GA feature selection for reservoir computing), epidemiology informed features selection (no GA feature selection for reservoir computing).
+- monthly update and no monthly update
+- two period : one starts on 2020-09-02, the other one starts on 2021-03-01
+
+Expected results:
+
+- Elastic-net > xgboost on early period
+- Reservoir computing > Elastic-net on all period (add memory and non linearity)
+- XGboost ~= Reservoir computing on late period (complex models are better in late period)
+- Epidemio feature selection > Data driven feature selection on early period (add expert knowledge has strong importance in the early period)
+- Elastic-net carbon footprint and time <<<<< XGboost and Reservoir computing
+
+# Prediction
 
 ```{r}
 ##### IMPORT FILES
