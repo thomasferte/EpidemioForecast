@@ -125,11 +125,14 @@ ls_prediction_performance$df_prediction_by_day %>%
 #### Forecast Error by month
 
 ```{r}
+#| fig-cap: "Forecast performance by month depending on model, update frequency and features used. Erros greater than 50 are set to 50 for visualisation."
+#| fig-height: 6
+#| 
 ls_prediction_performance$df_performance_by_month %>%
+  mutate(MAE = if_else(MAE > 50, 50, MAE)) %>%
   ggplot(mapping = aes(x = outcomeMonth, y = MAE, color = model, shape = features)) +
   geom_point() +
   scale_color_manual(values = color_methods) +
-  scale_y_log10() +
   facet_grid(update ~ starting_date) +
   theme_bw() +
   theme(axis.text.x = element_text(angle = 90)) +
@@ -140,6 +143,9 @@ ls_prediction_performance$df_performance_by_month %>%
 ```
 
 ```{r}
+#| fig-cap: "Mean Absoluter Error compared to baseline by month depending on model, update frequency and features used. Models below horitzontal line underperform compared to baseline model and therefore are useless. Erros greater than 10 are set to 10 for visualisation."
+#| fig-height: 6
+#| 
 ls_prediction_performance$df_performance_by_month %>%
   mutate(MAEB = if_else(MAEB > 10, 10, MAEB)) %>%
   ggplot(mapping = aes(x = outcomeMonth, y = MAEB, color = model, shape = features)) +
@@ -158,7 +164,7 @@ ls_prediction_performance$df_performance_by_month %>%
 #### Overall performance
 
 ```{r}
-#| tbl-cap: "Performance by algorithm initiated in 2020-08-15 from 2020-08-29 to 2021-03-15"
+#| tbl-cap: "Performance by algorithm initiated in 2020-09-02 from 2020-09-02 to 2021-03-15"
 ls_prediction_performance$df_prediction_by_day %>%
   filter(outcomeDate < "2021-03-15") %>%
   fct_compute_performance() %>%
@@ -184,11 +190,12 @@ ls_prediction_performance$df_prediction_by_day %>%
 ```
 
 ```{r overallPerf}
-#| fig-cap: "Overall performance of the different methods"
+#| fig-cap: "Overall performance of the different methods. Erros greater than 50 are set to 50 for visualisation."
 #| fig-height: 6
 #| 
 graph_perf <- ls_prediction_performance$df_prediction_by_day %>%
   fct_compute_performance() %>%
+  mutate(AE = if_else(AE > 50, 50, AE)) %>%
   ggplot(mapping = aes(x = features, y = AE, color = model)) +
   geom_point(position = position_dodge(width = .5)) +
   scale_color_manual(values = color_methods) +
@@ -221,6 +228,9 @@ files_hyperparameters <- list.files(path = path_experience1,
 names(files_hyperparameters) <- list.files(path = path_experience1,
                                            pattern = "_hyperparameters")
 
+bool_20200815 <- grepl(pattern = "2020-08-15", x = names(files_hyperparameters))
+files_hyperparameters <- files_hyperparameters[!bool_20200815]
+  
 df_hyperparameters <- lapply(names(files_hyperparameters),
                              function(name_file_i) readr::read_csv(files_hyperparameters[name_file_i]) %>%
                                mutate(across(.cols = any_of(vec_numeric_hp),
@@ -290,56 +300,72 @@ df_hyperparameters |>
 #| fig-cap: "Numeric hyperparameter, density of 40 best individuals per hyperparameter update date."
 #| fig-height: 16
 #| 
+
+vec_log_hp <- c("learning_rate",
+                "ridge",
+                "spectral_radius",
+                "input_scaling",
+                "leaking_rate")
+
 plot_best_numeric_hp_reservoir <- df_all_hp_best40 |>
   filter(model == "reservoir") %>%
+  na.omit() %>%
+  mutate(value = if_else(hyperparameter %in% vec_log_hp, log10(value), value),
+         hyperparameter = if_else(hyperparameter %in% vec_log_hp,
+                                  paste0("log(", hyperparameter, ")"),
+                                  hyperparameter)) %>%
   ggplot(mapping = aes(x = value,
-                       y = last_used_observation,
-                       group = interaction(last_used_observation, hyperparameter),
-                       fill = hyperparameter,
-                       color = hyperparameter)) +
-  ggridges::geom_density_ridges(alpha = 0.5) +
-  facet_grid(starting_date ~ features, scales = "free_y", switch = "both") +
-  scale_x_log10(breaks = c(1e-10, 1e-5, 1, 1e5)) +
+                       y = features,
+                       color = last_used_observation)) +
+  geom_point(position = position_dodge2(width = .2)) +
+  scale_color_viridis_d() +
+  facet_grid(starting_date ~ hyperparameter, scales = "free_x", switch = "both") +
   theme_bw() +
-  theme(legend.position = "bottom") +
   labs(x = "Hyperparameter value",
        y = "Update Date")
 
 plot_best_numeric_hp_xgboost <- df_all_hp_best40 |>
   filter(model == "xgboost") %>%
+  na.omit() %>%
+  mutate(value = if_else(hyperparameter %in% vec_log_hp, log10(value), value),
+         hyperparameter = if_else(hyperparameter %in% vec_log_hp,
+                                  paste0("log(", hyperparameter, ")"),
+                                  hyperparameter)) %>%
   ggplot(mapping = aes(x = value,
-                       y = last_used_observation,
-                       group = interaction(last_used_observation, hyperparameter),
-                       fill = hyperparameter,
-                       color = hyperparameter)) +
-  ggridges::geom_density_ridges(alpha = 0.5) +
-  facet_grid(starting_date ~ features, scales = "free_y", switch = "both") +
-  scale_x_log10(breaks = c(1e-10, 1e-5, 1, 1e5)) +
+                       y = features,
+                       color = last_used_observation)) +
+  geom_point(position = position_dodge2(width = .2)) +
+  scale_color_viridis_d() +
+  facet_grid(starting_date ~ hyperparameter, scales = "free_x", switch = "both") +
   theme_bw() +
-  theme(legend.position = "bottom") +
   labs(x = "Hyperparameter value",
        y = "Update Date")
 
 plot_best_numeric_hp_enet <- df_all_hp_best40 |>
   filter(model == "enet") %>%
+  na.omit() %>%
+  mutate(value = if_else(hyperparameter %in% vec_log_hp, log10(value), value),
+         hyperparameter = if_else(hyperparameter %in% vec_log_hp,
+                                  paste0("log(", hyperparameter, ")"),
+                                  hyperparameter)) %>%
   ggplot(mapping = aes(x = value,
-                       y = last_used_observation,
-                       group = interaction(last_used_observation, hyperparameter),
-                       fill = hyperparameter,
-                       color = hyperparameter)) +
-  ggridges::geom_density_ridges(alpha = 0.5) +
-  facet_grid(starting_date ~ features, scales = "free_y", switch = "both") +
-  scale_x_log10(breaks = c(1e-10, 1e-5, 1, 1e5)) +
+                       y = features,
+                       color = last_used_observation)) +
+  geom_point(position = position_dodge2(width = .2)) +
+  scale_color_viridis_d() +
+  facet_grid(starting_date ~ hyperparameter, scales = "free_x", switch = "both") +
   theme_bw() +
-  theme(legend.position = "bottom") +
   labs(x = "Hyperparameter value",
        y = "Update Date")
+
 
 ggpubr::ggarrange(plot_best_numeric_hp_reservoir,
                   plot_best_numeric_hp_enet,
                   plot_best_numeric_hp_xgboost,
                   nrow = 3,
-                  ncol = 1)
+                  ncol = 1,
+                  common.legend = TRUE,
+                  legend = "right")
 
 ```
 
@@ -365,6 +391,7 @@ df_emissions <- readr::read_csv(file_emissions) %>%
                     "features",
                     "trash_prediction")) %>%
   select(-starts_with("trash_")) %>%
+  filter(starting_date != "2020-08-15") %>%
   mutate(train_test = factor(grepl(x = file_hp,
                                    pattern = "evaluate_id_test_"),
                              levels = c(TRUE, FALSE),
@@ -375,7 +402,7 @@ df_emissions <- readr::read_csv(file_emissions) %>%
             mean_time = mean(duration)/3600,
             nb_jobs = n(),
             .groups = "drop") %>%
-  mutate(theoric_nb_jobs = case_when(train_test == "Test" & starting_date == "2020-08-15" ~ 18,
+  mutate(theoric_nb_jobs = case_when(train_test == "Test" & starting_date == "2020-09-02" ~ 18,
                                      train_test == "Test" & starting_date == "2021-03-01" ~ 11,
                                      train_test == "Train" ~ 200),
          total_max_emissions = mean_emissions * theoric_nb_jobs,
@@ -385,7 +412,7 @@ df_emissions <- readr::read_csv(file_emissions) %>%
 
 ```{r}
 df_emissions %>%
-  filter(starting_date == "2020-08-15") %>%
+  filter(starting_date == "2020-09-02") %>%
   select(model, starting_date, features, train_test, starts_with("total")) %>%
   tidyr::pivot_longer(cols = starts_with("total")) %>%
   ggplot(mapping = aes(x = features, y = value, color = model, shape = train_test)) +
@@ -412,7 +439,7 @@ df_performance_vs_CO2_tempCO2 <- df_emissions %>%
 df_performance_vs_CO2 <- ls_prediction_performance$df_prediction_by_day %>%
   fct_compute_performance() %>%
   filter(update == "Monthly update",
-         starting_date == "2020-08-15") %>%
+         starting_date == "2021-03-01") %>%
   select(model, starting_date, features, AE) %>%
   left_join(df_performance_vs_CO2_tempCO2,
             by = c("model", "starting_date", "features"))

@@ -27,6 +27,9 @@ fct_compute_prediction <- function(path_files){
   names(files_prediction) <- list.files(path = path_files,
                                         pattern = "_prediction")
   
+  bool_20200815 <- grepl(pattern = "2020-08-15", x = names(files_prediction))
+  files_prediction <- files_prediction[!bool_20200815]
+  
   df_prediction_temp <- lapply(files_prediction, read.csv) %>%
     bind_rows(.id = "model") %>%
     separate(model,
