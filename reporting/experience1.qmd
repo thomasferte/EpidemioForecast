@@ -1,6 +1,8 @@
 ---
 title: "Experience 1 - reporting"
 format: gfm
+toc: true
+number-sections: true
 editor: source
 echo: false
 message: false
@@ -67,7 +69,7 @@ minimum is 39 which seems acceptable.
 
 ```{r sanitycheckNbReservoirPerDay}
 #| fig-cap: "Number of reservoir per day for prediction"
-#| fig-height: 6
+#| fig-height: 4
 #| 
 ls_prediction_performance$df_prediction %>%
   group_by(hp_date, model, outcomeDate, features, starting_date, update) |> 
@@ -82,43 +84,60 @@ ls_prediction_performance$df_prediction %>%
                    "outcomeDate",
                    "features",
                    "starting_date")) %>%
+  filter(outcomeDate >= as.Date(starting_date)+14) %>%
   mutate(model_string = paste(model,
                               features,
-                              sep = "_")) %>%
+                              sep = "_"),
+         n = if_else(is.na(n), 0, n)) %>%
   ggplot(mapping = aes(x = outcomeDate,
                        y = n,
-                       color = update)) +
+                       color = update,
+                       shape = update)) +
   geom_line() +
+  scale_color_manual(values = c("black", "grey")) +
+  scale_y_continuous(labels = round,
+                     breaks = round) +
   facet_grid(model_string ~ starting_date, scales = "free_y") +
   theme_bw() +
   theme(strip.text.y = element_text(angle = 0)) +
-  labs(x = "Date", y = "Nb of models")
+  labs(x = "Date", y = "Number of models")
 ```
 
 ### Prediction
 
 ```{r PredictionByDayByModel}
 #| fig-cap: "Prediction by day by model"
-#| fig-height: 8
-#| 
-ls_prediction_performance$df_prediction_by_day %>%
+#| fig-height: 10
+
+make_plot_daily_prediction <- function(string_date, data){
+  data %>%
+  filter(starting_date == string_date) %>%
   mutate(pred = if_else(pred > 200, 200, pred)) %>%
-  ggplot(mapping = aes(x = outcomeDate, y = pred, color = model, linetype = features)) +
+  ggplot(mapping = aes(x = outcomeDate, y = pred, color = features)) +
   geom_line() +
-  geom_line(mapping = aes(y = outcome, color = "Observed"), na.rm = TRUE) +
   geom_line(mapping = aes(y = hosp, color = "Baseline")) +
-  scale_color_manual(values = color_methods) +
+  geom_line(mapping = aes(y = outcome, color = "Observed"), na.rm = TRUE) +
+  scale_color_viridis_d(option = "rocket", end = .85, direction = -1) +
   scale_y_continuous(limits = c(0, 200)) +
-  scale_x_date(breaks = "2 months") +
-  facet_grid(update ~ starting_date) +
+  scale_x_date(breaks = "3 months") +
+  facet_grid(model ~ update) +
   theme_bw() +
-  theme(axis.text.x = element_text(angle = 90)) +
+  theme(axis.text.x = element_text(angle = 45)) +
   labs(x = "Date",
        y = "Hospitalizations",
        color = "Model",
        linetype = "Features")
-```
+}
 
+plot_early <- make_plot_daily_prediction(string_date = "2020-09-02",
+                                         data = ls_prediction_performance$df_prediction_by_day) +
+  ggtitle('A. Model starts at 2020-09-02')
+plot_late <- make_plot_daily_prediction(string_date = "2021-03-01",
+                                        data = ls_prediction_performance$df_prediction_by_day) +
+  ggtitle('B. Model starts at 2021-03-01')
+
+ggpubr::ggarrange(plot_early, plot_late, common.legend = TRUE, legend = "right", ncol = 1, nrow = 2)
+```
 
 ### Performance
 
@@ -126,7 +145,7 @@ ls_prediction_performance$df_prediction_by_day %>%
 
 ```{r}
 #| fig-cap: "Forecast performance by month depending on model, update frequency and features used. Erros greater than 50 are set to 50 for visualisation."
-#| fig-height: 6
+#| fig-height: 4
 #| 
 ls_prediction_performance$df_performance_by_month %>%
   mutate(MAE = if_else(MAE > 50, 50, MAE)) %>%
@@ -144,7 +163,7 @@ ls_prediction_performance$df_performance_by_month %>%
 
 ```{r}
 #| fig-cap: "Mean Absoluter Error compared to baseline by month depending on model, update frequency and features used. Models below horitzontal line underperform compared to baseline model and therefore are useless. Erros greater than 10 are set to 10 for visualisation."
-#| fig-height: 6
+#| fig-height: 4
 #| 
 ls_prediction_performance$df_performance_by_month %>%
   mutate(MAEB = if_else(MAEB > 10, 10, MAEB)) %>%
@@ -190,17 +209,18 @@ ls_prediction_performance$df_prediction_by_day %>%
 ```
 
 ```{r overallPerf}
-#| fig-cap: "Overall performance of the different methods. Erros greater than 50 are set to 50 for visualisation."
-#| fig-height: 6
+#| fig-cap: "Performance by algorithm initiated in 2021-03-01 from 2021-03-15 to 2022-01-17. Erros greater than 25 are set to 25 for visualisation."
+#| fig-height: 3
 #| 
 graph_perf <- ls_prediction_performance$df_prediction_by_day %>%
   fct_compute_performance() %>%
-  mutate(AE = if_else(AE > 50, 50, AE)) %>%
+  filter(starting_date == "2021-03-01") %>%
+  mutate(AE = if_else(AE > 25, 25, AE)) %>%
   ggplot(mapping = aes(x = features, y = AE, color = model)) +
   geom_point(position = position_dodge(width = .5)) +
   scale_color_manual(values = color_methods) +
   theme_bw() +
-  facet_grid(starting_date ~ update, scales = "free_y") +
+  facet_grid(. ~ update, scales = "free_y") +
   labs(y = "Mean absolute error",
        x = "Features",
        color = "Update")
@@ -221,6 +241,11 @@ vec_numeric_hp <- c("n_estimators",
                     "input_scaling",
                     "ridge",
                     "l1_ratio")
+vec_log_hp <- c("learning_rate",
+                "ridge",
+                "spectral_radius",
+                "input_scaling",
+                "leaking_rate")
 
 files_hyperparameters <- list.files(path = path_experience1,
                                     full.names = TRUE,
@@ -236,7 +261,8 @@ df_hyperparameters <- lapply(names(files_hyperparameters),
                                mutate(across(.cols = any_of(vec_numeric_hp),
                                              .fns = as.numeric)) %>%
                                mutate(model = name_file_i,
-                                      .before = 1)) |>
+                                      .before = 1) %>%
+                               na.omit()) |>
   bind_rows() %>%
   tibble::rowid_to_column(var = "genetic_id") |>
   separate(model,
@@ -251,27 +277,41 @@ df_hyperparameters <- lapply(names(files_hyperparameters),
   select(-starts_with("trash_")) %>%
   mutate(last_used_observation = stringr::str_extract(string = file_hp,
                                                       pattern = "\\d{4}-\\d{2}-\\d{2}"),
-         last_used_observation = as.Date(last_used_observation))
+         last_used_observation = as.Date(last_used_observation)) %>%
+  filter(value != 1000) %>%
+  select(genetic_id, value, model, starting_date, features, last_used_observation, all_of(vec_numeric_hp))
 
 ## get the best 40 by date
+fct_format_num_hp <- function(dfhp){
+  dfhp %>%
+    ungroup() %>%
+    select(-value) %>%
+    tidyr::pivot_longer(cols = all_of(vec_numeric_hp), names_to = "hyperparameter") |>
+    mutate(last_used_observation = as.factor(last_used_observation),
+         last_used_observation = forcats::fct_rev(last_used_observation),
+         value = if_else(hyperparameter %in% vec_log_hp,
+                         log10(value),
+                         value),
+         hyperparameter = if_else(hyperparameter %in% vec_log_hp,
+                                  paste0("log10(", hyperparameter, ")"),
+                                  hyperparameter)) %>%
+    na.omit()
+}
+
+df_all_hp <- df_hyperparameters %>%
+  fct_format_num_hp()
+
 df_all_hp_best40 <- df_hyperparameters %>%
   group_by(model, starting_date, features, last_used_observation) %>%
   slice_min(value, n = 40) |>
-  ungroup() %>%
-  select(genetic_id, model, starting_date, features, last_used_observation, all_of(vec_numeric_hp)) |>
-  tidyr::pivot_longer(cols = all_of(vec_numeric_hp), names_to = "hyperparameter") |>
-  mutate(last_used_observation = as.factor(last_used_observation),
-         last_used_observation = forcats::fct_rev(last_used_observation))
+  fct_format_num_hp() |> 
+  mutate(last_used_observation = forcats::fct_rev(last_used_observation))
 
 df_all_hp_best1 <- df_hyperparameters %>%
   group_by(model, starting_date, features, last_used_observation) %>%
   slice_min(value, n = 1) |>
-  ungroup() %>%
-  select(genetic_id, model, starting_date, features, last_used_observation, all_of(vec_numeric_hp)) |>
-  tidyr::pivot_longer(cols = all_of(vec_numeric_hp), names_to = "hyperparameter") |>
-  mutate(last_used_observation = as.factor(last_used_observation),
-         last_used_observation = forcats::fct_rev(last_used_observation))
-
+  fct_format_num_hp() |> 
+  mutate(last_used_observation = forcats::fct_rev(last_used_observation))
 
 ```
 
@@ -279,6 +319,9 @@ df_all_hp_best1 <- df_hyperparameters %>%
 ## Sanity check
 
 ```{r}
+#| fig-cap: "Numbers of trial per model and date. Sanity check."
+#| fig-height: 6
+#| 
 df_hyperparameters |>
   filter(value != 1000) %>%
   group_by(last_used_observation, model, starting_date, features) |>
@@ -289,7 +332,27 @@ df_hyperparameters |>
   scale_fill_manual(values = color_methods) +
   labs(y = "nb of genetic individuals",
        x = "update date") +
-  theme_minimal()
+  theme_bw()
+```
+
+```{r}
+#| fig-cap: "Q1-Q3 distribution of numeric hyperparameters. Sanity check."
+#| fig-height: 12
+#| 
+df_all_hp %>%
+  group_by(model, starting_date, features, last_used_observation, hyperparameter) %>%
+  summarise(q1 = quantile(value, 0.25),
+            q3 = quantile(value, 0.75)) %>%
+  ggplot(mapping = aes(xmin = q1, xmax = q3, y = last_used_observation,
+                       color = interaction(features, starting_date))) +
+  geom_errorbarh() +
+  scale_color_viridis_d(option = "A", end = 0.9) +
+  facet_wrap(model ~ hyperparameter, scales = "free_x", ncol = 3) +
+  theme_bw() +
+  theme(legend.position = "bottom") +
+  labs(color = "Features x Starting date") +
+  guides(color=guide_legend(nrow=2,byrow=TRUE))
+
 ```
 
 ## Numeric hyperparameters
@@ -298,65 +361,56 @@ df_hyperparameters |>
 
 ```{r}
 #| fig-cap: "Numeric hyperparameter, density of 40 best individuals per hyperparameter update date."
-#| fig-height: 16
+#| fig-height: 10
 #| 
-
-vec_log_hp <- c("learning_rate",
-                "ridge",
-                "spectral_radius",
-                "input_scaling",
-                "leaking_rate")
 
 plot_best_numeric_hp_reservoir <- df_all_hp_best40 |>
   filter(model == "reservoir") %>%
-  na.omit() %>%
-  mutate(value = if_else(hyperparameter %in% vec_log_hp, log10(value), value),
-         hyperparameter = if_else(hyperparameter %in% vec_log_hp,
-                                  paste0("log(", hyperparameter, ")"),
-                                  hyperparameter)) %>%
   ggplot(mapping = aes(x = value,
                        y = features,
                        color = last_used_observation)) +
-  geom_point(position = position_dodge2(width = .2)) +
-  scale_color_viridis_d() +
+  geom_point(position = position_dodge2(width = .4, reverse = TRUE)) +
+  geom_point(data = df_all_hp_best1 %>% filter(model == "reservoir"),
+             position = position_dodge2(width = .4, reverse = TRUE),
+             mapping = aes(color = "Best")) +
+  scale_color_manual(values = c(viridis::viridis(n = 17), "black")) +
   facet_grid(starting_date ~ hyperparameter, scales = "free_x", switch = "both") +
   theme_bw() +
   labs(x = "Hyperparameter value",
-       y = "Update Date")
+       y = "Update Date",
+       color = "HP update")
 
 plot_best_numeric_hp_xgboost <- df_all_hp_best40 |>
   filter(model == "xgboost") %>%
-  na.omit() %>%
-  mutate(value = if_else(hyperparameter %in% vec_log_hp, log10(value), value),
-         hyperparameter = if_else(hyperparameter %in% vec_log_hp,
-                                  paste0("log(", hyperparameter, ")"),
-                                  hyperparameter)) %>%
   ggplot(mapping = aes(x = value,
                        y = features,
                        color = last_used_observation)) +
-  geom_point(position = position_dodge2(width = .2)) +
-  scale_color_viridis_d() +
+  geom_point(position = position_dodge2(width = .4, reverse = TRUE)) +
+  geom_point(data = df_all_hp_best1 %>% filter(model == "xgboost"),
+             position = position_dodge2(width = .4, reverse = TRUE),
+             mapping = aes(color = "Best")) +
+  scale_color_manual(values = c(viridis::viridis(n = 17), "black")) +
   facet_grid(starting_date ~ hyperparameter, scales = "free_x", switch = "both") +
   theme_bw() +
   labs(x = "Hyperparameter value",
-       y = "Update Date")
+       y = "Update Date",
+       color = "HP update")
 
 plot_best_numeric_hp_enet <- df_all_hp_best40 |>
   filter(model == "enet") %>%
-  na.omit() %>%
-  mutate(value = if_else(hyperparameter %in% vec_log_hp, log10(value), value),
-         hyperparameter = if_else(hyperparameter %in% vec_log_hp,
-                                  paste0("log(", hyperparameter, ")"),
-                                  hyperparameter)) %>%
   ggplot(mapping = aes(x = value,
                        y = features,
                        color = last_used_observation)) +
-  geom_point(position = position_dodge2(width = .2)) +
-  scale_color_viridis_d() +
+  geom_point(position = position_dodge2(width = .4, reverse = TRUE)) +
+  geom_point(data = df_all_hp_best1 %>% filter(model == "enet"),
+             position = position_dodge2(width = .4, reverse = TRUE),
+             mapping = aes(color = "Best")) +
+  scale_color_manual(values = c(viridis::viridis(n = 17), "black")) +
   facet_grid(starting_date ~ hyperparameter, scales = "free_x", switch = "both") +
   theme_bw() +
   labs(x = "Hyperparameter value",
-       y = "Update Date")
+       y = "Update Date",
+       color = "HP update")
 
 
 ggpubr::ggarrange(plot_best_numeric_hp_reservoir,
@@ -365,7 +419,7 @@ ggpubr::ggarrange(plot_best_numeric_hp_reservoir,
                   nrow = 3,
                   ncol = 1,
                   common.legend = TRUE,
-                  legend = "right")
+                  legend = "bottom")
 
 ```
 
@@ -411,14 +465,16 @@ df_emissions <- readr::read_csv(file_emissions) %>%
 ```
 
 ```{r}
+#| fig-cap: "Execution time, energy consumption and carbon footprint by algorithm starting at 2021-03-01.."
+#| fig-height: 6
+#| 
 df_emissions %>%
-  filter(starting_date == "2020-09-02") %>%
+  filter(starting_date == "2021-03-01") %>%
   select(model, starting_date, features, train_test, starts_with("total")) %>%
   tidyr::pivot_longer(cols = starts_with("total")) %>%
-  ggplot(mapping = aes(x = features, y = value, color = model, shape = train_test)) +
+  ggplot(mapping = aes(x = features, y = value, color = model)) +
   geom_point(position = position_dodge(width = .5)) +
   scale_color_manual(values = color_methods) +
-  scale_shape_manual(values = c(0, 16)) +
   facet_wrap(name ~ train_test,
              scales = "free_y",
              labeller = labeller(name = vec_time_labeller),
@@ -431,6 +487,9 @@ df_emissions %>%
 ```
 
 ```{r}
+#| fig-cap: "Mean Absolute Error and Carbon footprint by algorithm starting at 2021-03-01."
+#| fig-height: 4
+#| 
 df_performance_vs_CO2_tempCO2 <- df_emissions %>%
   group_by(model, starting_date, features) %>%
   summarise(total_max_emissions = sum(total_max_emissions),

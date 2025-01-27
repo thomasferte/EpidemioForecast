@@ -1,6 +1,27 @@
 # Experience 1 - reporting
 
 
+- [<span class="toc-section-number">1</span>
+  Introduction](#introduction)
+- [<span class="toc-section-number">2</span> Methods](#methods)
+- [<span class="toc-section-number">3</span> Prediction](#prediction)
+  - [<span class="toc-section-number">3.0.1</span> Sanity
+    check](#sanity-check)
+  - [<span class="toc-section-number">3.0.2</span>
+    Prediction](#prediction-1)
+  - [<span class="toc-section-number">3.0.3</span>
+    Performance](#performance)
+- [<span class="toc-section-number">4</span>
+  Hyperparameters](#hyperparameters)
+  - [<span class="toc-section-number">4.1</span> Sanity
+    check](#sanity-check-1)
+  - [<span class="toc-section-number">4.2</span> Numeric
+    hyperparameters](#numeric-hyperparameters)
+    - [<span class="toc-section-number">4.2.1</span> Hyperparameter
+      evolution](#hyperparameter-evolution)
+- [<span class="toc-section-number">5</span> Time and carbon
+  footprint](#time-and-carbon-footprint)
+
 # Introduction
 
 Goal = provide some results to write the article of the SARS-CoV-2
@@ -909,15 +930,19 @@ Performance by algorithm initiated in 2021-03-01 from 2021-03-15 to
 
 </div>
 
-![Overall performance of the different methods. Erros greater than 50
-are set to 50 for
+![Performance by algorithm initiated in 2021-03-01 from 2021-03-15 to
+2022-01-17. Erros greater than 25 are set to 25 for
 visualisation.](experience1_files/figure-commonmark/overallPerf-1.png)
 
 # Hyperparameters
 
 ## Sanity check
 
-![](experience1_files/figure-commonmark/unnamed-chunk-9-1.png)
+![Numbers of trial per model and date. Sanity
+check.](experience1_files/figure-commonmark/unnamed-chunk-9-1.png)
+
+![Q1-Q3 distribution of numeric hyperparameters. Sanity
+check.](experience1_files/figure-commonmark/unnamed-chunk-10-1.png)
 
 ## Numeric hyperparameters
 
@@ -925,10 +950,13 @@ visualisation.](experience1_files/figure-commonmark/overallPerf-1.png)
 
 ![Numeric hyperparameter, density of 40 best individuals per
 hyperparameter update
-date.](experience1_files/figure-commonmark/unnamed-chunk-10-1.png)
+date.](experience1_files/figure-commonmark/unnamed-chunk-11-1.png)
 
 # Time and carbon footprint
 
-![](experience1_files/figure-commonmark/unnamed-chunk-12-1.png)
+![Execution time, energy consumption and carbon footprint by algorithm
+starting at
+2021-03-01..](experience1_files/figure-commonmark/unnamed-chunk-13-1.png)
 
-![](experience1_files/figure-commonmark/unnamed-chunk-13-1.png)
+![Mean Absolute Error and Carbon footprint by algorithm starting at
+2021-03-01.](experience1_files/figure-commonmark/unnamed-chunk-14-1.png)
