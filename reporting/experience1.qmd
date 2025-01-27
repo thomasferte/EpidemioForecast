@@ -18,7 +18,7 @@ source(here::here("script/fct_compute_performance.R"))
 
 ```{r}
 path_experience1 <- here::here("output/experience1/aggregated_results/")
-color_methods <- c("#94C9A9", "#FB8B24", "#454372", "black", "darkgrey")
+color_methods <- viridis::inferno(n = 3, end = 0.9)
 ```
 
 # Introduction
@@ -122,7 +122,7 @@ make_plot_daily_prediction <- function(string_date, data){
   scale_x_date(breaks = "3 months") +
   facet_grid(model ~ update) +
   theme_bw() +
-  theme(axis.text.x = element_text(angle = 45)) +
+  theme(axis.text.x = element_text(angle = 90)) +
   labs(x = "Date",
        y = "Hospitalizations",
        color = "Model",
@@ -131,10 +131,10 @@ make_plot_daily_prediction <- function(string_date, data){
 
 plot_early <- make_plot_daily_prediction(string_date = "2020-09-02",
                                          data = ls_prediction_performance$df_prediction_by_day) +
-  ggtitle('A. Model starts at 2020-09-02')
+  ggtitle('A. Models start at 2020-09-02')
 plot_late <- make_plot_daily_prediction(string_date = "2021-03-01",
                                         data = ls_prediction_performance$df_prediction_by_day) +
-  ggtitle('B. Model starts at 2021-03-01')
+  ggtitle('B. Models start at 2021-03-01')
 
 ggpubr::ggarrange(plot_early, plot_late, common.legend = TRUE, legend = "right", ncol = 1, nrow = 2)
 ```
@@ -223,7 +223,7 @@ graph_perf <- ls_prediction_performance$df_prediction_by_day %>%
   facet_grid(. ~ update, scales = "free_y") +
   labs(y = "Mean absolute error",
        x = "Features",
-       color = "Update")
+       color = "Model")
 
 graph_perf
 ```
