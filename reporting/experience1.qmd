@@ -231,88 +231,7 @@ graph_perf
 # Hyperparameters
 
 ```{r}
-vec_numeric_hp <- c("n_estimators",
-                    "max_depth",
-                    "learning_rate",
-                    "subsample",
-                    "colsample_bytree",
-                    "spectral_radius",
-                    "leaking_rate",
-                    "input_scaling",
-                    "ridge",
-                    "l1_ratio")
-vec_log_hp <- c("learning_rate",
-                "ridge",
-                "spectral_radius",
-                "input_scaling",
-                "leaking_rate")
-
-files_hyperparameters <- list.files(path = path_experience1,
-                                    full.names = TRUE,
-                                    pattern = "_hyperparameters")
-names(files_hyperparameters) <- list.files(path = path_experience1,
-                                           pattern = "_hyperparameters")
-
-bool_20200815 <- grepl(pattern = "2020-08-15", x = names(files_hyperparameters))
-files_hyperparameters <- files_hyperparameters[!bool_20200815]
-  
-df_hyperparameters <- lapply(names(files_hyperparameters),
-                             function(name_file_i) readr::read_csv(files_hyperparameters[name_file_i]) %>%
-                               mutate(across(.cols = any_of(vec_numeric_hp),
-                                             .fns = as.numeric)) %>%
-                               mutate(model = name_file_i,
-                                      .before = 1) %>%
-                               na.omit()) |>
-  bind_rows() %>%
-  tibble::rowid_to_column(var = "genetic_id") |>
-  separate(model,
-           sep = "_",
-           into = c("trash_method",
-                    "model",
-                    "trash_date",
-                    "starting_date",
-                    "trash_features",
-                    "features",
-                    "trash_prediction")) %>%
-  select(-starts_with("trash_")) %>%
-  mutate(last_used_observation = stringr::str_extract(string = file_hp,
-                                                      pattern = "\\d{4}-\\d{2}-\\d{2}"),
-         last_used_observation = as.Date(last_used_observation)) %>%
-  filter(value != 1000) %>%
-  select(genetic_id, value, model, starting_date, features, last_used_observation, all_of(vec_numeric_hp))
-
-## get the best 40 by date
-fct_format_num_hp <- function(dfhp){
-  dfhp %>%
-    ungroup() %>%
-    select(-value) %>%
-    tidyr::pivot_longer(cols = all_of(vec_numeric_hp), names_to = "hyperparameter") |>
-    mutate(last_used_observation = as.factor(last_used_observation),
-         last_used_observation = forcats::fct_rev(last_used_observation),
-         value = if_else(hyperparameter %in% vec_log_hp,
-                         log10(value),
-                         value),
-         hyperparameter = if_else(hyperparameter %in% vec_log_hp,
-                                  paste0("log10(", hyperparameter, ")"),
-                                  hyperparameter)) %>%
-    na.omit()
-}
-
-df_all_hp <- df_hyperparameters %>%
-  fct_format_num_hp()
-
-df_all_hp_best40 <- df_hyperparameters %>%
-  group_by(model, starting_date, features, last_used_observation) %>%
-  slice_min(value, n = 40) |>
-  fct_format_num_hp() |> 
-  mutate(last_used_observation = forcats::fct_rev(last_used_observation))
-
-df_all_hp_best1 <- df_hyperparameters %>%
-  group_by(model, starting_date, features, last_used_observation) %>%
-  slice_min(value, n = 1) |>
-  fct_format_num_hp() |> 
-  mutate(last_used_observation = forcats::fct_rev(last_used_observation))
-
+ls_hyperparameters <- fct_compute_hyperparameters(path = path_experience1)
 ```
 
 
@@ -322,7 +241,7 @@ df_all_hp_best1 <- df_hyperparameters %>%
 #| fig-cap: "Numbers of trial per model and date. Sanity check."
 #| fig-height: 6
 #| 
-df_hyperparameters |>
+ls_hyperparameters$df_hyperparameters |>
   filter(value != 1000) %>%
   group_by(last_used_observation, model, starting_date, features) |>
   summarise(n = n(), .groups = "drop") |>
@@ -339,7 +258,7 @@ df_hyperparameters |>
 #| fig-cap: "Q1-Q3 distribution of numeric hyperparameters. Sanity check."
 #| fig-height: 12
 #| 
-df_all_hp %>%
+ls_hyperparameters$df_all_hp %>%
   group_by(model, starting_date, features, last_used_observation, hyperparameter) %>%
   summarise(q1 = quantile(value, 0.25),
             q3 = quantile(value, 0.75)) %>%
@@ -364,13 +283,13 @@ df_all_hp %>%
 #| fig-height: 10
 #| 
 
-plot_best_numeric_hp_reservoir <- df_all_hp_best40 |>
+plot_best_numeric_hp_reservoir <- ls_hyperparameters$df_all_hp_best40 |>
   filter(model == "reservoir") %>%
   ggplot(mapping = aes(x = value,
                        y = features,
                        color = last_used_observation)) +
   geom_point(position = position_dodge2(width = .4, reverse = TRUE)) +
-  geom_point(data = df_all_hp_best1 %>% filter(model == "reservoir"),
+  geom_point(data = ls_hyperparameters$df_all_hp_best1 %>% filter(model == "reservoir"),
              position = position_dodge2(width = .4, reverse = TRUE),
              mapping = aes(color = "Best")) +
   scale_color_manual(values = c(viridis::viridis(n = 17), "black")) +
@@ -380,13 +299,13 @@ plot_best_numeric_hp_reservoir <- df_all_hp_best40 |>
        y = "Update Date",
        color = "HP update")
 
-plot_best_numeric_hp_xgboost <- df_all_hp_best40 |>
+plot_best_numeric_hp_xgboost <- ls_hyperparameters$df_all_hp_best40 |>
   filter(model == "xgboost") %>%
   ggplot(mapping = aes(x = value,
                        y = features,
                        color = last_used_observation)) +
   geom_point(position = position_dodge2(width = .4, reverse = TRUE)) +
-  geom_point(data = df_all_hp_best1 %>% filter(model == "xgboost"),
+  geom_point(data = ls_hyperparameters$df_all_hp_best1 %>% filter(model == "xgboost"),
              position = position_dodge2(width = .4, reverse = TRUE),
              mapping = aes(color = "Best")) +
   scale_color_manual(values = c(viridis::viridis(n = 17), "black")) +
@@ -396,13 +315,13 @@ plot_best_numeric_hp_xgboost <- df_all_hp_best40 |>
        y = "Update Date",
        color = "HP update")
 
-plot_best_numeric_hp_enet <- df_all_hp_best40 |>
+plot_best_numeric_hp_enet <- ls_hyperparameters$df_all_hp_best40 |>
   filter(model == "enet") %>%
   ggplot(mapping = aes(x = value,
                        y = features,
                        color = last_used_observation)) +
   geom_point(position = position_dodge2(width = .4, reverse = TRUE)) +
-  geom_point(data = df_all_hp_best1 %>% filter(model == "enet"),
+  geom_point(data = ls_hyperparameters$df_all_hp_best1 %>% filter(model == "enet"),
              position = position_dodge2(width = .4, reverse = TRUE),
              mapping = aes(color = "Best")) +
   scale_color_manual(values = c(viridis::viridis(n = 17), "black")) +
@@ -426,42 +345,14 @@ ggpubr::ggarrange(plot_best_numeric_hp_reservoir,
 # Time and carbon footprint
 
 ```{r}
-file_emissions = paste0(path_experience1, "emissions_logs.csv")
+df_emissions <- fct_compute_emissions(path_experience1)
+
 vec_time_labeller <- c("CO2eq (kg)",
                        "Energy (kWh)",
                        "Time (h)")
 names(vec_time_labeller) <- c("total_max_emissions",
                               "total_max_energy",
                               "total_max_time")
-
-df_emissions <- readr::read_csv(file_emissions) %>%
-  separate(project_name,
-           sep = "_",
-           into = c("trash_method",
-                    "model",
-                    "trash_date",
-                    "starting_date",
-                    "trash_features",
-                    "features",
-                    "trash_prediction")) %>%
-  select(-starts_with("trash_")) %>%
-  filter(starting_date != "2020-08-15") %>%
-  mutate(train_test = factor(grepl(x = file_hp,
-                                   pattern = "evaluate_id_test_"),
-                             levels = c(TRUE, FALSE),
-                             labels = c("Test", "Train"))) %>%
-  group_by(model, starting_date, features, train_test) %>%
-  summarise(mean_emissions = mean(emissions),
-            mean_energy = mean(energy_consumed),
-            mean_time = mean(duration)/3600,
-            nb_jobs = n(),
-            .groups = "drop") %>%
-  mutate(theoric_nb_jobs = case_when(train_test == "Test" & starting_date == "2020-09-02" ~ 18,
-                                     train_test == "Test" & starting_date == "2021-03-01" ~ 11,
-                                     train_test == "Train" ~ 200),
-         total_max_emissions = mean_emissions * theoric_nb_jobs,
-         total_max_energy = mean_energy * theoric_nb_jobs,
-         total_max_time = mean_time * theoric_nb_jobs)
 ```
 
 ```{r}
