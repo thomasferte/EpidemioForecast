@@ -115,10 +115,10 @@ fct_compute_hyperparameters <- function(path){
                   "input_scaling",
                   "leaking_rate")
   
-  files_hyperparameters <- list.files(path = path_experience1,
+  files_hyperparameters <- list.files(path = path,
                                       full.names = TRUE,
                                       pattern = "_hyperparameters")
-  names(files_hyperparameters) <- list.files(path = path_experience1,
+  names(files_hyperparameters) <- list.files(path = path,
                                              pattern = "_hyperparameters")
   
   bool_20200815 <- grepl(pattern = "2020-08-15", x = names(files_hyperparameters))
@@ -205,4 +205,25 @@ fct_compute_emissions <- function(path){
            total_max_time = mean_time * theoric_nb_jobs)
   
   return(df_emissions)
+}
+
+
+make_plot_daily_prediction <- function(string_date, data){
+  data %>%
+    filter(starting_date == string_date) %>%
+    mutate(pred = if_else(pred > 200, 200, pred)) %>%
+    ggplot(mapping = aes(x = outcomeDate, y = pred, color = features)) +
+    geom_line() +
+    geom_line(mapping = aes(y = hosp, color = "Baseline")) +
+    geom_line(mapping = aes(y = outcome, color = "Observed"), na.rm = TRUE) +
+    scale_color_viridis_d(option = "rocket", end = .85, direction = -1) +
+    scale_y_continuous(limits = c(0, 200)) +
+    scale_x_date(breaks = "3 months") +
+    facet_grid(model ~ update) +
+    theme_bw() +
+    theme(axis.text.x = element_text(angle = 90)) +
+    labs(x = "Date",
+         y = "Hospitalizations",
+         color = "Model",
+         linetype = "Features")
 }

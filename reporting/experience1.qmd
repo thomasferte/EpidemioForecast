@@ -17,7 +17,10 @@ source(here::here("script/fct_compute_performance.R"))
 ```
 
 ```{r}
-path_experience1 <- here::here("output/experience1/aggregated_results/")
+vec_path_experience <- c(here::here("output/experience1/aggregated_results/"),
+                         here::here("output/experience2/aggregated_results/"),
+                         here::here("output/experience3/aggregated_results/"))
+
 color_methods <- viridis::inferno(n = 3, end = 0.9)
 ```
 
@@ -43,6 +46,8 @@ We compare different scenario :
 - monthly update and no monthly update
 - two period : one starts on 2020-09-02, the other one starts on 2021-03-01
 
+In order to evaluate the robustness of the results regarding the variability of reservoir and hyperparameter optimization we repeat the experiment three times. 
+
 Expected results:
 
 - Elastic-net > xgboost on early period
@@ -55,35 +60,44 @@ Expected results:
 
 ```{r}
 ##### IMPORT FILES
-ls_prediction_performance <- fct_compute_prediction(path_files = path_experience1)
+ls_prediction_performance_all <- lapply(X = vec_path_experience, FUN = fct_compute_prediction)
 
-df_performance <- fct_compute_performance(df_prediction_by_day = ls_prediction_performance$df_prediction_by_day)
+df_prediction <- lapply(1:length(ls_prediction_performance_all),
+                        function(i) ls_prediction_performance_all[[i]]$df_prediction %>%
+                          mutate(rep = i, .before = 0)
+                        ) %>%
+  bind_rows()
+
 ```
 
 ### Sanity check
 
 First, we check that there is 40 reservoir prediction for each day of
-the prediction for each scenario. We observe that there is indeed a
+the prediction for each scenario. At figure @fig-sanitycheckNbReservoirPerDay, we observe that there is indeed a
 forecast for each day. Some days have less than 40 reservoirs but the
 minimum is 39 which seems acceptable.
 
 ```{r sanitycheckNbReservoirPerDay}
 #| fig-cap: "Number of reservoir per day for prediction"
+#| label: fig-sanitycheckNbReservoirPerDay
 #| fig-height: 4
 #| 
-ls_prediction_performance$df_prediction %>%
-  group_by(hp_date, model, outcomeDate, features, starting_date, update) |> 
+df_prediction %>%
+  group_by(hp_date, model, outcomeDate, features, starting_date, update, rep) |> 
   summarise(n = n(), .groups = "drop") %>%
-  full_join(expand.grid(update = unique(ls_prediction_performance$df_prediction$update),
-                        model = unique(ls_prediction_performance$df_prediction$model),
-                        outcomeDate = unique(ls_prediction_performance$df_prediction$outcomeDate),
-                        features = unique(ls_prediction_performance$df_prediction$features),
-                        starting_date = unique(ls_prediction_performance$df_prediction$starting_date)),
-            by = c("update",
+  full_join(expand.grid(rep = unique(df_prediction$rep),
+                        update = unique(df_prediction$update),
+                        model = unique(df_prediction$model),
+                        outcomeDate = unique(df_prediction$outcomeDate),
+                        features = unique(df_prediction$features),
+                        starting_date = unique(df_prediction$starting_date)),
+            by = c("rep",
+                   "update",
                    "model",
                    "outcomeDate",
                    "features",
                    "starting_date")) %>%
+  filter(!(rep %in% c(2,3) & starting_date != "2021-03-01")) %>%
   filter(outcomeDate >= as.Date(starting_date)+14) %>%
   mutate(model_string = paste(model,
                               features,
@@ -91,49 +105,32 @@ ls_prediction_performance$df_prediction %>%
          n = if_else(is.na(n), 0, n)) %>%
   ggplot(mapping = aes(x = outcomeDate,
                        y = n,
-                       color = update,
+                       color = as.factor(rep),
                        shape = update)) +
   geom_line() +
-  scale_color_manual(values = c("black", "grey")) +
   scale_y_continuous(labels = round,
                      breaks = round) +
   facet_grid(model_string ~ starting_date, scales = "free_y") +
   theme_bw() +
   theme(strip.text.y = element_text(angle = 0)) +
-  labs(x = "Date", y = "Number of models")
+  labs(x = "Date", y = "Number of models", color = "Repetition id")
 ```
 
 ### Prediction
 
+First we show a graphical evaluation of the different algorithms. On panel A of figure @fig-PredictionByDayByModel we first observe that xgboost led to highly volatile predictions when little information is available, persisting when using all features without updating hyperparameters. At the contrary, both elastic-net and reservoir computing where quite robust regarding hyperparameter choice. When more information is available such as presented at panel B, all models where quite stable and updating the hyperparameters had little effect.
+
+Regarding the graphical performance at the early phase of the epidemic, xgboost seemed worse compared to elastic-net and reservoir computing due to this high volatility. However, when more information is available 
+
 ```{r PredictionByDayByModel}
-#| fig-cap: "Prediction by day by model"
+#| fig-cap: "Prediction by day by model. Only results of the first repetition are shown."
+#| label: fig-PredictionByDayByModel
 #| fig-height: 10
-
-make_plot_daily_prediction <- function(string_date, data){
-  data %>%
-  filter(starting_date == string_date) %>%
-  mutate(pred = if_else(pred > 200, 200, pred)) %>%
-  ggplot(mapping = aes(x = outcomeDate, y = pred, color = features)) +
-  geom_line() +
-  geom_line(mapping = aes(y = hosp, color = "Baseline")) +
-  geom_line(mapping = aes(y = outcome, color = "Observed"), na.rm = TRUE) +
-  scale_color_viridis_d(option = "rocket", end = .85, direction = -1) +
-  scale_y_continuous(limits = c(0, 200)) +
-  scale_x_date(breaks = "3 months") +
-  facet_grid(model ~ update) +
-  theme_bw() +
-  theme(axis.text.x = element_text(angle = 90)) +
-  labs(x = "Date",
-       y = "Hospitalizations",
-       color = "Model",
-       linetype = "Features")
-}
-
 plot_early <- make_plot_daily_prediction(string_date = "2020-09-02",
-                                         data = ls_prediction_performance$df_prediction_by_day) +
+                                         data = ls_prediction_performance_all[[1]]$df_prediction_by_day) +
   ggtitle('A. Models start at 2020-09-02')
 plot_late <- make_plot_daily_prediction(string_date = "2021-03-01",
-                                        data = ls_prediction_performance$df_prediction_by_day) +
+                                        data = ls_prediction_performance_all[[1]]$df_prediction_by_day) +
   ggtitle('B. Models start at 2021-03-01')
 
 ggpubr::ggarrange(plot_early, plot_late, common.legend = TRUE, legend = "right", ncol = 1, nrow = 2)
@@ -147,7 +144,7 @@ ggpubr::ggarrange(plot_early, plot_late, common.legend = TRUE, legend = "right",
 #| fig-cap: "Forecast performance by month depending on model, update frequency and features used. Erros greater than 50 are set to 50 for visualisation."
 #| fig-height: 4
 #| 
-ls_prediction_performance$df_performance_by_month %>%
+ls_prediction_performance_all[[1]]$df_performance_by_month %>%
   mutate(MAE = if_else(MAE > 50, 50, MAE)) %>%
   ggplot(mapping = aes(x = outcomeMonth, y = MAE, color = model, shape = features)) +
   geom_point() +
@@ -165,7 +162,7 @@ ls_prediction_performance$df_performance_by_month %>%
 #| fig-cap: "Mean Absoluter Error compared to baseline by month depending on model, update frequency and features used. Models below horitzontal line underperform compared to baseline model and therefore are useless. Erros greater than 10 are set to 10 for visualisation."
 #| fig-height: 4
 #| 
-ls_prediction_performance$df_performance_by_month %>%
+ls_prediction_performance_all[[1]]$df_performance_by_month %>%
   mutate(MAEB = if_else(MAEB > 10, 10, MAEB)) %>%
   ggplot(mapping = aes(x = outcomeMonth, y = MAEB, color = model, shape = features)) +
   geom_point() +
@@ -184,10 +181,14 @@ ls_prediction_performance$df_performance_by_month %>%
 
 ```{r}
 #| tbl-cap: "Performance by algorithm initiated in 2020-09-02 from 2020-09-02 to 2021-03-15"
-ls_prediction_performance$df_prediction_by_day %>%
+ls_prediction_performance_all[[1]]$df_prediction_by_day %>%
   filter(outcomeDate < "2021-03-15") %>%
   fct_compute_performance() %>%
   dplyr::select(model, features, update, MAE, MRE, MAEB, MREB, starting_date) %>%
+  labelled::set_variable_labels(MAE = "MAE (+/- SD)",
+                                MRE = "MRE (+/- SD)",
+                                MAEB = "MAEB (+/- SD)",
+                                MREB = "MREB (+/- SD)") %>%
   gt::gt(
     rowname_col = "features",
     groupname_col = "model",
@@ -197,10 +198,27 @@ ls_prediction_performance$df_prediction_by_day %>%
 
 ```{r}
 #| tbl-cap: "Performance by algorithm initiated in 2021-03-01 from 2021-03-15 to 2022-01-17."
-ls_prediction_performance$df_prediction_by_day %>%
+df_perf_all_rep <- lapply(1:length(ls_prediction_performance_all),
+       function(i){
+         ls_prediction_performance_all[[i]]$df_prediction_by_day %>%
+           mutate(rep = i, .before = 0)
+         }) %>%
+  bind_rows() %>%
   filter(starting_date == "2021-03-01") %>%
-  fct_compute_performance() %>%
-  dplyr::select(model, features, update, MAE, MRE, MAEB, MREB, starting_date) %>%
+  group_by(rep, model, starting_date, features, update) %>%
+  summarise(MAE = mean(AE, na.rm = T),
+            MRE = median(RE, na.rm = T),
+            MAEB = mean(AE_baseline, na.rm = T),
+            MREB = median(RE_baseline, na.rm = T),
+            .groups = "drop") 
+
+df_perf_all_rep %>%
+  group_by(model, starting_date, features, update) %>%
+  summarise(across(c("MAE", "MRE", "MAEB", "MREB"),
+                   function(i) paste0(round(median(i), 2), " (",
+                                      round(min(i), 2), " ; ",
+                                      round(max(i), 2), ")")),
+            .groups = "drop") %>%
   gt::gt(
     rowname_col = "features",
     groupname_col = "model",
@@ -212,11 +230,15 @@ ls_prediction_performance$df_prediction_by_day %>%
 #| fig-cap: "Performance by algorithm initiated in 2021-03-01 from 2021-03-15 to 2022-01-17. Erros greater than 25 are set to 25 for visualisation."
 #| fig-height: 3
 #| 
-graph_perf <- ls_prediction_performance$df_prediction_by_day %>%
-  fct_compute_performance() %>%
-  filter(starting_date == "2021-03-01") %>%
-  mutate(AE = if_else(AE > 25, 25, AE)) %>%
-  ggplot(mapping = aes(x = features, y = AE, color = model)) +
+
+df_perf_all_rep %>%
+  group_by(model, starting_date, features, update) %>%
+  summarise(median_MAE = median(MAE),
+            min_MAE = min(MAE),
+            max_MAE = max(MAE),
+            .groups = "drop") %>%
+  ggplot(mapping = aes(x = features, y = median_MAE, ymin = min_MAE, ymax = max_MAE, color = model)) +
+  geom_errorbar(position = position_dodge(width = .5), width = 0.3) +
   geom_point(position = position_dodge(width = .5)) +
   scale_color_manual(values = color_methods) +
   theme_bw() +
@@ -231,7 +253,7 @@ graph_perf
 # Hyperparameters
 
 ```{r}
-ls_hyperparameters <- fct_compute_hyperparameters(path = path_experience1)
+ls_hyperparameters <- fct_compute_hyperparameters(path = vec_path_experience[[1]])
 ```
 
 
@@ -288,7 +310,7 @@ plot_best_numeric_hp_reservoir <- ls_hyperparameters$df_all_hp_best40 |>
   ggplot(mapping = aes(x = value,
                        y = features,
                        color = last_used_observation)) +
-  geom_point(position = position_dodge2(width = .4, reverse = TRUE)) +
+  geom_point(position = position_dodge2(width = .4, reverse = TRUE), shape = 1, alpha = .5) +
   geom_point(data = ls_hyperparameters$df_all_hp_best1 %>% filter(model == "reservoir"),
              position = position_dodge2(width = .4, reverse = TRUE),
              mapping = aes(color = "Best")) +
@@ -304,7 +326,7 @@ plot_best_numeric_hp_xgboost <- ls_hyperparameters$df_all_hp_best40 |>
   ggplot(mapping = aes(x = value,
                        y = features,
                        color = last_used_observation)) +
-  geom_point(position = position_dodge2(width = .4, reverse = TRUE)) +
+  geom_point(position = position_dodge2(width = .4, reverse = TRUE), shape = 1, alpha = .5) +
   geom_point(data = ls_hyperparameters$df_all_hp_best1 %>% filter(model == "xgboost"),
              position = position_dodge2(width = .4, reverse = TRUE),
              mapping = aes(color = "Best")) +
@@ -320,7 +342,7 @@ plot_best_numeric_hp_enet <- ls_hyperparameters$df_all_hp_best40 |>
   ggplot(mapping = aes(x = value,
                        y = features,
                        color = last_used_observation)) +
-  geom_point(position = position_dodge2(width = .4, reverse = TRUE)) +
+  geom_point(position = position_dodge2(width = .4, reverse = TRUE), shape = 1, alpha = .5) +
   geom_point(data = ls_hyperparameters$df_all_hp_best1 %>% filter(model == "enet"),
              position = position_dodge2(width = .4, reverse = TRUE),
              mapping = aes(color = "Best")) +

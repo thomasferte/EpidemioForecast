@@ -51,6 +51,10 @@ We compare different scenario :
 - two period : one starts on 2020-09-02, the other one starts on
   2021-03-01
 
+In order to evaluate the robustness of the results regarding the
+variability of reservoir and hyperparameter optimization we repeat the
+experiment three times.
+
 Expected results:
 
 - Elastic-net \> xgboost on early period
@@ -78,8 +82,18 @@ prediction](experience1_files/figure-commonmark/sanitycheckNbReservoirPerDay-1.p
 
 ### Prediction
 
-![Prediction by day by
-model](experience1_files/figure-commonmark/PredictionByDayByModel-1.png)
+First we show a graphical evaluation of the different algorithms. On
+panel A of figure
+<a href="#fig-PredictionByDayByModel" class="quarto-xref">Figure 1</a>
+
+<div id="fig-PredictionByDayByModel">
+
+![](experience1_files/figure-commonmark/fig-PredictionByDayByModel-1.png)
+
+
+Figure 1: Prediction by day by model
+
+</div>
 
 ### Performance
 
