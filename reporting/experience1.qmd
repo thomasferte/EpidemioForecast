@@ -133,7 +133,15 @@ plot_late <- make_plot_daily_prediction(string_date = "2021-03-01",
                                         data = ls_prediction_performance_all[[1]]$df_prediction_by_day) +
   ggtitle('B. Models start at 2021-03-01')
 
-ggpubr::ggarrange(plot_early, plot_late, common.legend = TRUE, legend = "right", ncol = 1, nrow = 2)
+plot_PredictionByDayByModel <- ggpubr::ggarrange(plot_early, plot_late,
+                                                 common.legend = TRUE, legend = "right",
+                                                 ncol = 1, nrow = 2)
+plot_PredictionByDayByModel
+
+ggsave(plot_PredictionByDayByModel,
+       filename = here::here("figures/plot_PredictionByDayByModel.pdf"),
+       height = 9,
+       width = 7)
 ```
 
 ### Performance
@@ -143,8 +151,9 @@ ggpubr::ggarrange(plot_early, plot_late, common.legend = TRUE, legend = "right",
 ```{r}
 #| fig-cap: "Forecast performance by month depending on model, update frequency and features used. Erros greater than 50 are set to 50 for visualisation."
 #| fig-height: 4
+#| label: fig-perfbymonth
 #| 
-ls_prediction_performance_all[[1]]$df_performance_by_month %>%
+perfbymonth <- ls_prediction_performance_all[[1]]$df_performance_by_month %>%
   mutate(MAE = if_else(MAE > 50, 50, MAE)) %>%
   ggplot(mapping = aes(x = outcomeMonth, y = MAE, color = model, shape = features)) +
   geom_point() +
@@ -156,13 +165,22 @@ ls_prediction_performance_all[[1]]$df_performance_by_month %>%
        y = "Mean Absolute Error",
        color = "Model",
        shape = "Features")
+
+perfbymonth
+
+ggsave(perfbymonth,
+       filename = here::here("figures/perfbymonth.pdf"),
+       height = 4,
+       width = 7)
+
 ```
 
 ```{r}
 #| fig-cap: "Mean Absoluter Error compared to baseline by month depending on model, update frequency and features used. Models below horitzontal line underperform compared to baseline model and therefore are useless. Erros greater than 10 are set to 10 for visualisation."
 #| fig-height: 4
+#| label: fig-perfbymonthmaeb
 #| 
-ls_prediction_performance_all[[1]]$df_performance_by_month %>%
+perfbymonthmaeb <- ls_prediction_performance_all[[1]]$df_performance_by_month %>%
   mutate(MAEB = if_else(MAEB > 10, 10, MAEB)) %>%
   ggplot(mapping = aes(x = outcomeMonth, y = MAEB, color = model, shape = features)) +
   geom_point() +
@@ -175,6 +193,13 @@ ls_prediction_performance_all[[1]]$df_performance_by_month %>%
        y = "Mean Absolute Error compared to Baseline",
        color = "Model",
        shape = "Features")
+
+perfbymonthmaeb
+
+ggsave(perfbymonthmaeb,
+       filename = here::here("figures/perfbymonthmaeb.pdf"),
+       height = 4,
+       width = 7)
 ```
 
 #### Overall performance
@@ -301,6 +326,7 @@ ls_hyperparameters$df_all_hp %>%
 ```{r}
 #| fig-cap: "Numeric hyperparameter, density of 40 best individuals per hyperparameter update date."
 #| fig-height: 10
+#| label: fig-evolutionhyperparameters
 #| 
 
 plot_best_numeric_hp_reservoir <- ls_hyperparameters$df_all_hp_best40 |>
@@ -352,13 +378,20 @@ plot_best_numeric_hp_enet <- ls_hyperparameters$df_all_hp_best40 |>
        color = "HP update")
 
 
-ggpubr::ggarrange(plot_best_numeric_hp_reservoir,
+evolutionhyperparameters <- ggpubr::ggarrange(plot_best_numeric_hp_reservoir,
                   plot_best_numeric_hp_enet,
                   plot_best_numeric_hp_xgboost,
                   nrow = 3,
                   ncol = 1,
                   common.legend = TRUE,
                   legend = "bottom")
+
+evolutionhyperparameters
+
+ggsave(evolutionhyperparameters,
+       filename = here::here("figures/evolutionhyperparameters.pdf"),
+       height = 10,
+       width = 10)
 
 ```
 
@@ -407,7 +440,9 @@ df_emissions %>%
 ```{r}
 #| fig-cap: "Mean Absolute Error and Carbon footprint by algorithm starting at 2021-03-01."
 #| fig-height: 4
+#| label: fig-emissionvsperformance
 #| 
+
 df_performance_vs_CO2_tempCO2 <- df_emissions %>%
   group_by(rep, model, starting_date, features) %>%
   summarise(total_mean_emissions = sum(total_mean_emissions),
@@ -429,7 +464,7 @@ df_performance_vs_CO2 <- df_perf_all_rep %>%
   left_join(df_performance_vs_CO2_tempCO2,
             by = c("model", "starting_date", "features"))
 
-df_performance_vs_CO2 %>%
+emissionvsperformance <- df_performance_vs_CO2 %>%
   ggplot(mapping = aes(x = median_total_mean_emissions, y = median_MAE,
                        xmin = min_total_mean_emissions, xmax = max_total_mean_emissions,
                        ymin = min_MAE, ymax = max_MAE,
@@ -444,5 +479,12 @@ df_performance_vs_CO2 %>%
        y = "Mean Absolute Error",
        color = "Model",
        shape = "Features")
+
+emissionvsperformance
+
+ggsave(emissionvsperformance,
+       filename = here::here("figures/emissionvsperformance.pdf"),
+       height = 4,
+       width = 5)
 ```
 

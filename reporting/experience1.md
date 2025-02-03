@@ -119,15 +119,27 @@ repetition are shown.
 
 #### Forecast Error by month
 
-![Forecast performance by month depending on model, update frequency and
-features used. Erros greater than 50 are set to 50 for
-visualisation.](experience1_files/figure-commonmark/unnamed-chunk-4-1.png)
+<div id="fig-perfbymonth">
 
-![Mean Absoluter Error compared to baseline by month depending on model,
-update frequency and features used. Models below horitzontal line
-underperform compared to baseline model and therefore are useless. Erros
-greater than 10 are set to 10 for
-visualisation.](experience1_files/figure-commonmark/unnamed-chunk-5-1.png)
+![](experience1_files/figure-commonmark/fig-perfbymonth-1.png)
+
+
+Figure 3: Forecast performance by month depending on model, update
+frequency and features used. Erros greater than 50 are set to 50 for
+visualisation.
+
+</div>
+<div id="fig-perfbymonthmaeb">
+
+![](experience1_files/figure-commonmark/fig-perfbymonthmaeb-1.png)
+
+
+Figure 4: Mean Absoluter Error compared to baseline by month depending
+on model, update frequency and features used. Models below horitzontal
+line underperform compared to baseline model and therefore are useless.
+Erros greater than 10 are set to 10 for visualisation.
+
+</div>
 
 #### Overall performance
 
@@ -982,9 +994,15 @@ check.](experience1_files/figure-commonmark/unnamed-chunk-10-1.png)
 
 ### Hyperparameter evolution
 
-![Numeric hyperparameter, density of 40 best individuals per
-hyperparameter update
-date.](experience1_files/figure-commonmark/unnamed-chunk-11-1.png)
+<div id="fig-evolutionhyperparameters">
+
+![](experience1_files/figure-commonmark/fig-evolutionhyperparameters-1.png)
+
+
+Figure 5: Numeric hyperparameter, density of 40 best individuals per
+hyperparameter update date.
+
+</div>
 
 # Time and carbon footprint
 
@@ -992,5 +1010,12 @@ date.](experience1_files/figure-commonmark/unnamed-chunk-11-1.png)
 starting at
 2021-03-01..](experience1_files/figure-commonmark/unnamed-chunk-13-1.png)
 
-![Mean Absolute Error and Carbon footprint by algorithm starting at
-2021-03-01.](experience1_files/figure-commonmark/unnamed-chunk-14-1.png)
+<div id="fig-emissionvsperformance">
+
+![](experience1_files/figure-commonmark/fig-emissionvsperformance-1.png)
+
+
+Figure 6: Mean Absolute Error and Carbon footprint by algorithm starting
+at 2021-03-01.
+
+</div>
