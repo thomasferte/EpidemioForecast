@@ -73,25 +73,45 @@ Expected results:
 ### Sanity check
 
 First, we check that there is 40 reservoir prediction for each day of
-the prediction for each scenario. We observe that there is indeed a
+the prediction for each scenario. At figure
+<a href="#fig-sanitycheckNbReservoirPerDay"
+class="quarto-xref">Figure 1</a>, we observe that there is indeed a
 forecast for each day. Some days have less than 40 reservoirs but the
 minimum is 39 which seems acceptable.
 
-![Number of reservoir per day for
-prediction](experience1_files/figure-commonmark/sanitycheckNbReservoirPerDay-1.png)
+<div id="fig-sanitycheckNbReservoirPerDay">
+
+![](experience1_files/figure-commonmark/fig-sanitycheckNbReservoirPerDay-1.png)
+
+
+Figure 1: Number of reservoir per day for prediction
+
+</div>
 
 ### Prediction
 
 First we show a graphical evaluation of the different algorithms. On
 panel A of figure
-<a href="#fig-PredictionByDayByModel" class="quarto-xref">Figure 1</a>
+<a href="#fig-PredictionByDayByModel" class="quarto-xref">Figure 2</a>
+we first observe that xgboost led to highly volatile predictions when
+little information is available, persisting when using all features
+without updating hyperparameters. At the contrary, both elastic-net and
+reservoir computing where quite robust regarding hyperparameter choice.
+When more information is available such as presented at panel B, all
+models where quite stable and updating the hyperparameters had little
+effect.
+
+Regarding the graphical performance at the early phase of the epidemic,
+xgboost seemed worse compared to elastic-net and reservoir computing due
+to this high volatility. However, when more information is available
 
 <div id="fig-PredictionByDayByModel">
 
 ![](experience1_files/figure-commonmark/fig-PredictionByDayByModel-1.png)
 
 
-Figure 1: Prediction by day by model
+Figure 2: Prediction by day by model. Only results of the first
+repetition are shown.
 
 </div>
 
@@ -508,7 +528,7 @@ visualisation.](experience1_files/figure-commonmark/unnamed-chunk-5-1.png)
 }
 </style>
 
-|  |  | update | MAE | MRE | MAEB | MREB | starting_date |
+|  |  | update | MAE (+/- SD) | MRE (+/- SD) | MAEB (+/- SD) | MREB (+/- SD) | starting_date |
 |----|----|----|----|----|----|----|----|
 | enet | all | No monthly update | 20.47(±13.86) | 0.2(±0.2) | -0.56(±14.04) | 1.02(±12.93) | 2020-09-02 |
 |  | all | Monthly update | 22.12(±15.73) | 0.22(±0.22) | 1.09(±14.23) | 1.09(±6.47) | 2020-09-02 |
@@ -924,20 +944,20 @@ Performance by algorithm initiated in 2020-09-02 from 2020-09-02 to
 }
 </style>
 
-|  |  | update | MAE | MRE | MAEB | MREB | starting_date |
+|  |  | starting_date | update | MAE | MRE | MAEB | MREB |
 |----|----|----|----|----|----|----|----|
-| enet | all | No monthly update | 15.83(±12.41) | 0.29(±0.34) | -2.76(±7.07) | 0.85(±1.63) | 2021-03-01 |
-|  | all | Monthly update | 16.29(±12.42) | 0.3(±0.38) | -2.29(±8.48) | 0.9(±1.57) | 2021-03-01 |
-|  | epi | No monthly update | 16(±13.42) | 0.29(±0.33) | -2.58(±5.78) | 0.91(±2.09) | 2021-03-01 |
-|  | epi | Monthly update | 15.89(±13.33) | 0.29(±0.32) | -2.7(±6.37) | 0.91(±2.33) | 2021-03-01 |
-| reservoir | all | No monthly update | 15.6(±12.66) | 0.27(±0.33) | -2.99(±5.54) | 0.87(±1.25) | 2021-03-01 |
-|  | all | Monthly update | 15.63(±12.58) | 0.27(±0.35) | -2.96(±5.55) | 0.85(±1.59) | 2021-03-01 |
-|  | epi | No monthly update | 15.05(±12.77) | 0.25(±0.31) | -3.53(±6.59) | 0.86(±2.2) | 2021-03-01 |
-|  | epi | Monthly update | 14.96(±12.81) | 0.25(±0.31) | -3.62(±7.9) | 0.8(±2.76) | 2021-03-01 |
-| xgboost | all | No monthly update | 15.98(±14.96) | 0.24(±0.36) | -2.61(±9.02) | 0.84(±2.66) | 2021-03-01 |
-|  | all | Monthly update | 16.29(±14.66) | 0.27(±0.38) | -2.29(±9.77) | 0.93(±NaN) | 2021-03-01 |
-|  | epi | No monthly update | 16.42(±13.35) | 0.31(±0.37) | -2.17(±7.76) | 0.88(±3.09) | 2021-03-01 |
-|  | epi | Monthly update | 16.99(±13.29) | 0.31(±0.38) | -1.59(±10.08) | 0.84(±3.4) | 2021-03-01 |
+| enet | all | 2021-03-01 | No monthly update | 15.83 (15.82 ; 15.87) | 0.29 (0.28 ; 0.29) | -2.76 (-2.77 ; -2.72) | 0.85 (0.85 ; 0.86) |
+|  | all | 2021-03-01 | Monthly update | 15.98 (15.9 ; 16.29) | 0.28 (0.28 ; 0.3) | -2.6 (-2.68 ; -2.29) | 0.89 (0.88 ; 0.9) |
+|  | epi | 2021-03-01 | No monthly update | 15.96 (15.86 ; 16) | 0.29 (0.29 ; 0.3) | -2.62 (-2.73 ; -2.58) | 0.91 (0.9 ; 0.91) |
+|  | epi | 2021-03-01 | Monthly update | 15.88 (15.81 ; 15.89) | 0.29 (0.28 ; 0.29) | -2.7 (-2.77 ; -2.7) | 0.91 (0.9 ; 0.91) |
+| reservoir | all | 2021-03-01 | No monthly update | 15.4 (15.24 ; 15.6) | 0.27 (0.24 ; 0.28) | -3.19 (-3.35 ; -2.99) | 0.86 (0.85 ; 0.87) |
+|  | all | 2021-03-01 | Monthly update | 15.63 (15.59 ; 15.65) | 0.27 (0.25 ; 0.28) | -2.96 (-3 ; -2.93) | 0.86 (0.85 ; 0.88) |
+|  | epi | 2021-03-01 | No monthly update | 15.16 (15.05 ; 17.45) | 0.25 (0.25 ; 0.32) | -3.43 (-3.53 ; -1.14) | 0.86 (0.83 ; 0.97) |
+|  | epi | 2021-03-01 | Monthly update | 15.1 (14.96 ; 15.46) | 0.25 (0.25 ; 0.28) | -3.48 (-3.62 ; -3.12) | 0.83 (0.8 ; 0.87) |
+| xgboost | all | 2021-03-01 | No monthly update | 16.08 (15.98 ; 19.95) | 0.27 (0.24 ; 0.37) | -2.51 (-2.61 ; 1.36) | 0.88 (0.84 ; 1.12) |
+|  | all | 2021-03-01 | Monthly update | 16.29 (16.26 ; 16.78) | 0.29 (0.27 ; 0.32) | -2.29 (-2.33 ; -1.8) | 0.92 (0.89 ; 0.93) |
+|  | epi | 2021-03-01 | No monthly update | 16.44 (16.42 ; 16.97) | 0.28 (0.28 ; 0.31) | -2.15 (-2.17 ; -1.62) | 0.93 (0.88 ; 0.95) |
+|  | epi | 2021-03-01 | Monthly update | 16.99 (16.61 ; 17.32) | 0.32 (0.31 ; 0.33) | -1.59 (-1.97 ; -1.27) | 0.89 (0.84 ; 0.97) |
 
 Performance by algorithm initiated in 2021-03-01 from 2021-03-15 to
 2022-01-17.

@@ -174,7 +174,7 @@ fct_compute_hyperparameters <- function(path){
 }
 
 fct_compute_emissions <- function(path){
-  file_emissions = paste0(path_experience1, "emissions_logs.csv")
+  file_emissions = paste0(path, "emissions_logs.csv")
   df_emissions <- readr::read_csv(file_emissions) %>%
     separate(project_name,
              sep = "_",
@@ -200,9 +200,9 @@ fct_compute_emissions <- function(path){
     mutate(theoric_nb_jobs = case_when(train_test == "Test" & starting_date == "2020-09-02" ~ 18,
                                        train_test == "Test" & starting_date == "2021-03-01" ~ 11,
                                        train_test == "Train" ~ 200),
-           total_max_emissions = mean_emissions * theoric_nb_jobs,
-           total_max_energy = mean_energy * theoric_nb_jobs,
-           total_max_time = mean_time * theoric_nb_jobs)
+           total_mean_emissions = mean_emissions * theoric_nb_jobs,
+           total_mean_energy = mean_energy * theoric_nb_jobs,
+           total_mean_time = mean_time * theoric_nb_jobs)
   
   return(df_emissions)
 }

@@ -246,8 +246,6 @@ df_perf_all_rep %>%
   labs(y = "Mean absolute error",
        x = "Features",
        color = "Model")
-
-graph_perf
 ```
 
 # Hyperparameters
@@ -314,7 +312,7 @@ plot_best_numeric_hp_reservoir <- ls_hyperparameters$df_all_hp_best40 |>
   geom_point(data = ls_hyperparameters$df_all_hp_best1 %>% filter(model == "reservoir"),
              position = position_dodge2(width = .4, reverse = TRUE),
              mapping = aes(color = "Best")) +
-  scale_color_manual(values = c(viridis::viridis(n = 17), "black")) +
+  scale_color_manual(values = c(viridis::viridis(n = 17), "red")) +
   facet_grid(starting_date ~ hyperparameter, scales = "free_x", switch = "both") +
   theme_bw() +
   labs(x = "Hyperparameter value",
@@ -330,7 +328,7 @@ plot_best_numeric_hp_xgboost <- ls_hyperparameters$df_all_hp_best40 |>
   geom_point(data = ls_hyperparameters$df_all_hp_best1 %>% filter(model == "xgboost"),
              position = position_dodge2(width = .4, reverse = TRUE),
              mapping = aes(color = "Best")) +
-  scale_color_manual(values = c(viridis::viridis(n = 17), "black")) +
+  scale_color_manual(values = c(viridis::viridis(n = 17), "red")) +
   facet_grid(starting_date ~ hyperparameter, scales = "free_x", switch = "both") +
   theme_bw() +
   labs(x = "Hyperparameter value",
@@ -346,7 +344,7 @@ plot_best_numeric_hp_enet <- ls_hyperparameters$df_all_hp_best40 |>
   geom_point(data = ls_hyperparameters$df_all_hp_best1 %>% filter(model == "enet"),
              position = position_dodge2(width = .4, reverse = TRUE),
              mapping = aes(color = "Best")) +
-  scale_color_manual(values = c(viridis::viridis(n = 17), "black")) +
+  scale_color_manual(values = c(viridis::viridis(n = 17), "red")) +
   facet_grid(starting_date ~ hyperparameter, scales = "free_x", switch = "both") +
   theme_bw() +
   labs(x = "Hyperparameter value",
@@ -367,14 +365,15 @@ ggpubr::ggarrange(plot_best_numeric_hp_reservoir,
 # Time and carbon footprint
 
 ```{r}
-df_emissions <- fct_compute_emissions(path_experience1)
+df_emissions <- lapply(X = vec_path_experience, FUN = fct_compute_emissions) %>%
+  bind_rows(.id = "rep")
 
 vec_time_labeller <- c("CO2eq (kg)",
                        "Energy (kWh)",
                        "Time (h)")
-names(vec_time_labeller) <- c("total_max_emissions",
-                              "total_max_energy",
-                              "total_max_time")
+names(vec_time_labeller) <- c("total_mean_emissions",
+                              "total_mean_energy",
+                              "total_mean_time")
 ```
 
 ```{r}
@@ -383,10 +382,16 @@ names(vec_time_labeller) <- c("total_max_emissions",
 #| 
 df_emissions %>%
   filter(starting_date == "2021-03-01") %>%
-  select(model, starting_date, features, train_test, starts_with("total")) %>%
+  select(rep, model, starting_date, features, train_test, starts_with("total")) %>%
   tidyr::pivot_longer(cols = starts_with("total")) %>%
-  ggplot(mapping = aes(x = features, y = value, color = model)) +
+  group_by(model, starting_date, features, train_test, name) %>%
+  summarise(median = median(value),
+            min = min(value),
+            max = max(value),
+            .groups = "drop") %>%
+  ggplot(mapping = aes(x = features, y = median, ymin = min, ymax = max, color = model)) +
   geom_point(position = position_dodge(width = .5)) +
+  geom_errorbar(position = position_dodge(width = .5), width = 0) +
   scale_color_manual(values = color_methods) +
   facet_wrap(name ~ train_test,
              scales = "free_y",
@@ -404,21 +409,34 @@ df_emissions %>%
 #| fig-height: 4
 #| 
 df_performance_vs_CO2_tempCO2 <- df_emissions %>%
+  group_by(rep, model, starting_date, features) %>%
+  summarise(total_mean_emissions = sum(total_mean_emissions),
+            .groups = "drop") %>%
   group_by(model, starting_date, features) %>%
-  summarise(total_max_emissions = sum(total_max_emissions),
+  summarise(median_total_mean_emissions = median(total_mean_emissions),
+            min_total_mean_emissions = min(total_mean_emissions),
+            max_total_mean_emissions = max(total_mean_emissions),
             .groups = "drop")
 
-df_performance_vs_CO2 <- ls_prediction_performance$df_prediction_by_day %>%
-  fct_compute_performance() %>%
+df_performance_vs_CO2 <- df_perf_all_rep %>%
   filter(update == "Monthly update",
          starting_date == "2021-03-01") %>%
-  select(model, starting_date, features, AE) %>%
+  group_by(model, starting_date, features) %>%
+  summarise(median_MAE = median(MAE),
+            min_MAE = min(MAE),
+            max_MAE = max(MAE),
+            .groups = "drop") %>%
   left_join(df_performance_vs_CO2_tempCO2,
             by = c("model", "starting_date", "features"))
 
 df_performance_vs_CO2 %>%
-  ggplot(mapping = aes(x = total_max_emissions, y = AE, color = model, shape = features)) +
+  ggplot(mapping = aes(x = median_total_mean_emissions, y = median_MAE,
+                       xmin = min_total_mean_emissions, xmax = max_total_mean_emissions,
+                       ymin = min_MAE, ymax = max_MAE,
+                       color = model, shape = features)) +
   geom_point(size = 3) +
+  geom_errorbar(width = 0) +
+  geom_errorbarh(height = 0) +
   scale_color_manual(values = color_methods) +
   scale_shape_manual(values = c(8, 18)) +
   theme_bw() +
