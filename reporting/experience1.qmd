@@ -167,12 +167,6 @@ perfbymonth <- ls_prediction_performance_all[[1]]$df_performance_by_month %>%
        shape = "Features")
 
 perfbymonth
-
-ggsave(perfbymonth,
-       filename = here::here("figures/perfbymonth.pdf"),
-       height = 4,
-       width = 7)
-
 ```
 
 ```{r}
@@ -195,21 +189,30 @@ perfbymonthmaeb <- ls_prediction_performance_all[[1]]$df_performance_by_month %>
        shape = "Features")
 
 perfbymonthmaeb
+```
 
-ggsave(perfbymonthmaeb,
-       filename = here::here("figures/perfbymonthmaeb.pdf"),
-       height = 4,
+```{r}
+plot_combine_month_error <- ggpubr::ggarrange(perfbymonth + ggtitle('A. Mean Absolute Error by month'),
+                                              perfbymonthmaeb + ggtitle('B. Mean Absolute Error compared to Baseline by month'),
+                                              common.legend = TRUE,
+                                              legend = "bottom",
+                                              ncol = 1, nrow = 2)
+
+ggsave(plot_combine_month_error,
+       filename = here::here("figures/plot_combine_month_error.pdf"),
+       height = 8,
        width = 7)
 ```
+
 
 #### Overall performance
 
 ```{r}
 #| tbl-cap: "Performance by algorithm initiated in 2020-09-02 from 2020-09-02 to 2021-03-15"
-ls_prediction_performance_all[[1]]$df_prediction_by_day %>%
+tab_perf_early <- ls_prediction_performance_all[[1]]$df_prediction_by_day %>%
   filter(outcomeDate < "2021-03-15") %>%
   fct_compute_performance() %>%
-  dplyr::select(model, features, update, MAE, MRE, MAEB, MREB, starting_date) %>%
+  dplyr::select(model, features, starting_date, update, MAE, MRE, MAEB, MREB) %>%
   labelled::set_variable_labels(MAE = "MAE (+/- SD)",
                                 MRE = "MRE (+/- SD)",
                                 MAEB = "MAEB (+/- SD)",
@@ -219,6 +222,10 @@ ls_prediction_performance_all[[1]]$df_prediction_by_day %>%
     groupname_col = "model",
     row_group_as_column = TRUE
   )
+
+tab_perf_early
+
+# a = tab_perf_early %>% gt::as_latex()
 ```
 
 ```{r}

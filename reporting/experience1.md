@@ -540,20 +540,20 @@ Erros greater than 10 are set to 10 for visualisation.
 }
 </style>
 
-|  |  | update | MAE (+/- SD) | MRE (+/- SD) | MAEB (+/- SD) | MREB (+/- SD) | starting_date |
+|  |  | starting_date | update | MAE (+/- SD) | MRE (+/- SD) | MAEB (+/- SD) | MREB (+/- SD) |
 |----|----|----|----|----|----|----|----|
-| enet | all | No monthly update | 20.47(±13.86) | 0.2(±0.2) | -0.56(±14.04) | 1.02(±12.93) | 2020-09-02 |
-|  | all | Monthly update | 22.12(±15.73) | 0.22(±0.22) | 1.09(±14.23) | 1.09(±6.47) | 2020-09-02 |
-|  | epi | No monthly update | 24.36(±20.26) | 0.23(±0.25) | 3.33(±17.76) | 1.04(±10.89) | 2020-09-02 |
-|  | epi | Monthly update | 24.65(±20.54) | 0.23(±0.25) | 3.61(±18.33) | 1.08(±11.34) | 2020-09-02 |
-| reservoir | all | No monthly update | 21.54(±18.39) | 0.2(±0.28) | 0.51(±19.52) | 0.86(±7.79) | 2020-09-02 |
-|  | all | Monthly update | 20.82(±18.42) | 0.2(±0.28) | -0.21(±17.7) | 0.95(±4.49) | 2020-09-02 |
-|  | epi | No monthly update | 22.47(±18.41) | 0.21(±0.22) | 1.44(±18.5) | 0.98(±13.12) | 2020-09-02 |
-|  | epi | Monthly update | 22.69(±16.69) | 0.24(±0.22) | 1.66(±17) | 1.05(±16.75) | 2020-09-02 |
-| xgboost | all | No monthly update | 161.48(±253.34) | 0.88(±3.51) | 140.44(±255.67) | 3.66(±639.63) | 2020-09-02 |
-|  | all | Monthly update | 28.72(±24.91) | 0.26(±0.38) | 7.68(±23.19) | 1.3(±18.99) | 2020-09-02 |
-|  | epi | No monthly update | 24.95(±19.65) | 0.26(±0.27) | 3.91(±19.25) | 1.2(±21.78) | 2020-09-02 |
-|  | epi | Monthly update | 31.43(±37.04) | 0.25(±0.41) | 10.39(±36.03) | 1.29(±8.8) | 2020-09-02 |
+| enet | all | 2020-09-02 | No monthly update | 20.47(±13.86) | 0.2(±0.2) | -0.56(±14.04) | 1.02(±12.93) |
+|  | all | 2020-09-02 | Monthly update | 22.12(±15.73) | 0.22(±0.22) | 1.09(±14.23) | 1.09(±6.47) |
+|  | epi | 2020-09-02 | No monthly update | 24.36(±20.26) | 0.23(±0.25) | 3.33(±17.76) | 1.04(±10.89) |
+|  | epi | 2020-09-02 | Monthly update | 24.65(±20.54) | 0.23(±0.25) | 3.61(±18.33) | 1.08(±11.34) |
+| reservoir | all | 2020-09-02 | No monthly update | 21.54(±18.39) | 0.2(±0.28) | 0.51(±19.52) | 0.86(±7.79) |
+|  | all | 2020-09-02 | Monthly update | 20.82(±18.42) | 0.2(±0.28) | -0.21(±17.7) | 0.95(±4.49) |
+|  | epi | 2020-09-02 | No monthly update | 22.47(±18.41) | 0.21(±0.22) | 1.44(±18.5) | 0.98(±13.12) |
+|  | epi | 2020-09-02 | Monthly update | 22.69(±16.69) | 0.24(±0.22) | 1.66(±17) | 1.05(±16.75) |
+| xgboost | all | 2020-09-02 | No monthly update | 161.48(±253.34) | 0.88(±3.51) | 140.44(±255.67) | 3.66(±639.63) |
+|  | all | 2020-09-02 | Monthly update | 28.72(±24.91) | 0.26(±0.38) | 7.68(±23.19) | 1.3(±18.99) |
+|  | epi | 2020-09-02 | No monthly update | 24.95(±19.65) | 0.26(±0.27) | 3.91(±19.25) | 1.2(±21.78) |
+|  | epi | 2020-09-02 | Monthly update | 31.43(±37.04) | 0.25(±0.41) | 10.39(±36.03) | 1.29(±8.8) |
 
 Performance by algorithm initiated in 2020-09-02 from 2020-09-02 to
 2021-03-15
@@ -985,10 +985,10 @@ visualisation.](experience1_files/figure-commonmark/overallPerf-1.png)
 ## Sanity check
 
 ![Numbers of trial per model and date. Sanity
-check.](experience1_files/figure-commonmark/unnamed-chunk-9-1.png)
+check.](experience1_files/figure-commonmark/unnamed-chunk-10-1.png)
 
 ![Q1-Q3 distribution of numeric hyperparameters. Sanity
-check.](experience1_files/figure-commonmark/unnamed-chunk-10-1.png)
+check.](experience1_files/figure-commonmark/unnamed-chunk-11-1.png)
 
 ## Numeric hyperparameters
 
@@ -1008,7 +1008,7 @@ hyperparameter update date.
 
 ![Execution time, energy consumption and carbon footprint by algorithm
 starting at
-2021-03-01..](experience1_files/figure-commonmark/unnamed-chunk-13-1.png)
+2021-03-01..](experience1_files/figure-commonmark/unnamed-chunk-14-1.png)
 
 <div id="fig-emissionvsperformance">
 
