@@ -129,12 +129,22 @@ frequency and features used. Erros greater than 50 are set to 50 for
 visualisation.
 
 </div>
+<div id="fig-perfMAEMRE">
+
+![](experience1_files/figure-commonmark/fig-perfMAEMRE-1.png)
+
+
+Figure 4: Median Relative Error and Mean Absolute Error depending on
+Outcome value. MAE greater than 50 are set to 50 and MRE greater than 1
+are set to 1 for visualisation.
+
+</div>
 <div id="fig-perfbymonthmaeb">
 
 ![](experience1_files/figure-commonmark/fig-perfbymonthmaeb-1.png)
 
 
-Figure 4: Mean Absoluter Error compared to baseline by month depending
+Figure 5: Mean Absoluter Error compared to baseline by month depending
 on model, update frequency and features used. Models below horitzontal
 line underperform compared to baseline model and therefore are useless.
 Erros greater than 10 are set to 10 for visualisation.
@@ -985,10 +995,10 @@ visualisation.](experience1_files/figure-commonmark/overallPerf-1.png)
 ## Sanity check
 
 ![Numbers of trial per model and date. Sanity
-check.](experience1_files/figure-commonmark/unnamed-chunk-10-1.png)
+check.](experience1_files/figure-commonmark/unnamed-chunk-11-1.png)
 
 ![Q1-Q3 distribution of numeric hyperparameters. Sanity
-check.](experience1_files/figure-commonmark/unnamed-chunk-11-1.png)
+check.](experience1_files/figure-commonmark/unnamed-chunk-12-1.png)
 
 ## Numeric hyperparameters
 
@@ -999,7 +1009,7 @@ check.](experience1_files/figure-commonmark/unnamed-chunk-11-1.png)
 ![](experience1_files/figure-commonmark/fig-evolutionhyperparameters-1.png)
 
 
-Figure 5: Numeric hyperparameter, density of 40 best individuals per
+Figure 6: Numeric hyperparameter, density of 40 best individuals per
 hyperparameter update date.
 
 </div>
@@ -1008,14 +1018,14 @@ hyperparameter update date.
 
 ![Execution time, energy consumption and carbon footprint by algorithm
 starting at
-2021-03-01..](experience1_files/figure-commonmark/unnamed-chunk-14-1.png)
+2021-03-01..](experience1_files/figure-commonmark/unnamed-chunk-15-1.png)
 
 <div id="fig-emissionvsperformance">
 
 ![](experience1_files/figure-commonmark/fig-emissionvsperformance-1.png)
 
 
-Figure 6: Mean Absolute Error and Carbon footprint by algorithm starting
+Figure 7: Mean Absolute Error and Carbon footprint by algorithm starting
 at 2021-03-01.
 
 </div>

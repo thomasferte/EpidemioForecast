@@ -170,6 +170,33 @@ perfbymonth
 ```
 
 ```{r}
+#| fig-cap: "Median Relative Error and Mean Absolute Error depending on Outcome value. MAE greater than 50 are set to 50 and MRE greater than 1 are set to 1 for visualisation."
+#| fig-height: 4
+#| label: fig-perfMAEMRE
+vec_metric_labeller <- c("Mean Absolute Error",
+                         "Mean Relative Error")
+names(vec_metric_labeller) <- c("MAE",
+                                "MRE")
+
+MAEMRE_by_ouctome <- ls_prediction_performance_all[[1]]$df_performance_by_month %>%
+  mutate(MAE = if_else(MAE > 50, 50, MAE),
+         MRE = if_else(MRE > 1, 1, MRE)) %>%
+  tidyr::pivot_longer(cols = c("MAE", "MRE"), names_to = "metric", values_to = "metric_value") %>%
+  ggplot(mapping = aes(x = mean_outcome, y = metric_value, color = model, shape = features)) +
+  geom_point() +
+  facet_wrap(. ~ metric, scale = "free", labeller = labeller(metric = vec_metric_labeller)) +
+  scale_color_manual(values = color_methods) +
+  theme_bw() +
+  theme(legend.position = "bottom") +
+  labs(color = "Model",
+       shape = "Features",
+       x = "Mean outcome by month",
+       y = "Metric value")
+
+MAEMRE_by_ouctome
+```
+
+```{r}
 #| fig-cap: "Mean Absoluter Error compared to baseline by month depending on model, update frequency and features used. Models below horitzontal line underperform compared to baseline model and therefore are useless. Erros greater than 10 are set to 10 for visualisation."
 #| fig-height: 4
 #| label: fig-perfbymonthmaeb
@@ -194,14 +221,15 @@ perfbymonthmaeb
 ```{r}
 plot_combine_month_error <- ggpubr::ggarrange(perfbymonth + ggtitle('A. Mean Absolute Error by month'),
                                               perfbymonthmaeb + ggtitle('B. Mean Absolute Error compared to Baseline by month'),
+                                              MAEMRE_by_ouctome + ggtitle('C. Median Absolute Error and Median Relative Error'),
                                               common.legend = TRUE,
                                               legend = "bottom",
-                                              ncol = 1, nrow = 2)
+                                              ncol = 1, nrow = 3)
 
 ggsave(plot_combine_month_error,
        filename = here::here("figures/plot_combine_month_error.pdf"),
-       height = 8,
-       width = 7)
+       height = 12,
+       width = 8)
 ```
 
 

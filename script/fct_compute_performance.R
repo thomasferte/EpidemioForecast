@@ -73,8 +73,10 @@ fct_compute_prediction <- function(path_files){
   df_performance_by_month <- df_prediction_by_day %>%
     mutate(outcomeMonth = gsub(pattern = "(.*)-\\d+","\\1", x = outcomeDate), .before = 1) %>%
     group_by(outcomeMonth, model, starting_date, features, update) %>%
-    summarise(MAE = mean(AE, na.rm = TRUE),
+    summarise(mean_outcome = mean(outcome, na.rm = TRUE),
+              MAE = mean(AE, na.rm = TRUE),
               MAEB = mean(AE_baseline, na.rm = TRUE),
+              MRE = median(RE, na.rm = TRUE),
               .groups = "drop")
   
   return(list(df_prediction = df_prediction,
