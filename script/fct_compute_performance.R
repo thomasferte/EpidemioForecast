@@ -9,10 +9,13 @@ fct_compute_performance <- function(df_prediction_by_day){
               RE = median(RE, na.rm = TRUE),
               sd_RE_baseline = sd(RE_baseline, na.rm = TRUE),
               RE_baseline = median(RE_baseline, na.rm = TRUE),
+              mean_baseline_AE = mean(baseline_AE, na.rm = TRUE),
+              sd_baseline_AE = sd(baseline_AE, na.rm = TRUE),
               .groups = "drop") %>%
-    select(model, starting_date, features, update, AE, sd_AE, AE_baseline, sd_AE_baseline, RE, sd_RE, RE_baseline, sd_RE_baseline) %>%
-    mutate(across(c("AE", "RE", "AE_baseline", "RE_baseline", starts_with("sd_")),
+    select(model, starting_date, features, update, mean_baseline_AE, sd_baseline_AE, AE, sd_AE, AE_baseline, sd_AE_baseline, RE, sd_RE, RE_baseline, sd_RE_baseline) %>%
+    mutate(across(c("mean_baseline_AE", "AE", "RE", "AE_baseline", "RE_baseline", starts_with("sd_")),
                   ~ round(.x, 2)),
+           Baseline = paste0(mean_baseline_AE, "(\u00B1", sd_baseline_AE, ")"),
            MAE = paste0(AE, "(\u00B1", sd_AE, ")"),
            MRE = paste0(RE, "(\u00B1", sd_RE, ")"),
            MAEB = paste0(AE_baseline, "(\u00B1", sd_AE_baseline, ")"),
@@ -77,6 +80,7 @@ fct_compute_prediction <- function(path_files){
               MAE = mean(AE, na.rm = TRUE),
               MAEB = mean(AE_baseline, na.rm = TRUE),
               MRE = median(RE, na.rm = TRUE),
+              baseline_AE = mean(AE, na.rm = TRUE),
               .groups = "drop")
   
   return(list(df_prediction = df_prediction,

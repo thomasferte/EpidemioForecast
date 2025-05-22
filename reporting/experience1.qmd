@@ -240,7 +240,7 @@ ggsave(plot_combine_month_error,
 tab_perf_early <- ls_prediction_performance_all[[1]]$df_prediction_by_day %>%
   filter(outcomeDate < "2021-03-15") %>%
   fct_compute_performance() %>%
-  dplyr::select(model, features, starting_date, update, MAE, MRE, MAEB, MREB) %>%
+  dplyr::select(model, features, starting_date, update, Baseline, MAE, MRE, MAEB, MREB) %>%
   labelled::set_variable_labels(MAE = "MAE (+/- SD)",
                                 MRE = "MRE (+/- SD)",
                                 MAEB = "MAEB (+/- SD)",
@@ -266,7 +266,8 @@ df_perf_all_rep <- lapply(1:length(ls_prediction_performance_all),
   bind_rows() %>%
   filter(starting_date == "2021-03-01") %>%
   group_by(rep, model, starting_date, features, update) %>%
-  summarise(MAE = mean(AE, na.rm = T),
+  summarise(Baseline = mean(baseline_AE, na.rm = T),
+            MAE = mean(AE, na.rm = T),
             MRE = median(RE, na.rm = T),
             MAEB = mean(AE_baseline, na.rm = T),
             MREB = median(RE_baseline, na.rm = T),
@@ -274,7 +275,7 @@ df_perf_all_rep <- lapply(1:length(ls_prediction_performance_all),
 
 df_perf_all_rep %>%
   group_by(model, starting_date, features, update) %>%
-  summarise(across(c("MAE", "MRE", "MAEB", "MREB"),
+  summarise(across(c("Baseline", "MAE", "MRE", "MAEB", "MREB"),
                    function(i) paste0(round(median(i), 2), " (",
                                       round(min(i), 2), " ; ",
                                       round(max(i), 2), ")")),
@@ -312,6 +313,14 @@ df_perf_all_rep %>%
 
 ```{r}
 ls_hyperparameters <- fct_compute_hyperparameters(path = vec_path_experience[[1]])
+```
+
+
+```{r}
+### save Julien
+ls_hyperparameters$df_all_hp_best40 |> 
+  filter(model == "reservoir", features == "epi", last_used_observation == "2021-03-01", starting_date == "2021-03-01") |> 
+  write.csv(row.names = FALSE, file = here::here("output/save_julien.csv"))
 ```
 
 
@@ -513,7 +522,8 @@ emissionvsperformance <- df_performance_vs_CO2 %>%
   labs(x = "train + test CO2eq (kg)",
        y = "Mean Absolute Error",
        color = "Model",
-       shape = "Features")
+       shape = "Features") +
+  ylim(c(0,20))
 
 emissionvsperformance
 
