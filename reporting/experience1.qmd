@@ -67,7 +67,6 @@ df_prediction <- lapply(1:length(ls_prediction_performance_all),
                           mutate(rep = i, .before = 0)
                         ) %>%
   bind_rows()
-
 ```
 
 ### Sanity check
@@ -319,7 +318,7 @@ ls_hyperparameters <- fct_compute_hyperparameters(path = vec_path_experience[[1]
 ```{r}
 ### save Julien
 ls_hyperparameters$df_all_hp_best40 |> 
-  filter(model == "reservoir", features == "epi", last_used_observation == "2021-03-01", starting_date == "2021-03-01") |> 
+  filter(model == "RC", features == "Epi", last_used_observation == "2021-03-01", starting_date == "2021-03-01") |> 
   write.csv(row.names = FALSE, file = here::here("output/save_julien.csv"))
 ```
 
@@ -379,7 +378,7 @@ plot_best_numeric_hp_reservoir <- ls_hyperparameters$df_all_hp_best40 |>
                        y = features,
                        color = last_used_observation)) +
   geom_point(position = position_dodge2(width = .4, reverse = TRUE), shape = 1, alpha = .5) +
-  geom_point(data = ls_hyperparameters$df_all_hp_best1 %>% filter(model == "reservoir"),
+  geom_point(data = ls_hyperparameters$df_all_hp_best1 %>% filter(model == "RC"),
              position = position_dodge2(width = .4, reverse = TRUE),
              mapping = aes(color = "Best")) +
   scale_color_manual(values = c(viridis::viridis(n = 17), "red")) +
@@ -390,12 +389,12 @@ plot_best_numeric_hp_reservoir <- ls_hyperparameters$df_all_hp_best40 |>
        color = "HP update")
 
 plot_best_numeric_hp_xgboost <- ls_hyperparameters$df_all_hp_best40 |>
-  filter(model == "xgboost") %>%
+  filter(model == "XGBoost") %>%
   ggplot(mapping = aes(x = value,
                        y = features,
                        color = last_used_observation)) +
   geom_point(position = position_dodge2(width = .4, reverse = TRUE), shape = 1, alpha = .5) +
-  geom_point(data = ls_hyperparameters$df_all_hp_best1 %>% filter(model == "xgboost"),
+  geom_point(data = ls_hyperparameters$df_all_hp_best1 %>% filter(model == "XGBoost"),
              position = position_dodge2(width = .4, reverse = TRUE),
              mapping = aes(color = "Best")) +
   scale_color_manual(values = c(viridis::viridis(n = 17), "red")) +
@@ -406,12 +405,12 @@ plot_best_numeric_hp_xgboost <- ls_hyperparameters$df_all_hp_best40 |>
        color = "HP update")
 
 plot_best_numeric_hp_enet <- ls_hyperparameters$df_all_hp_best40 |>
-  filter(model == "enet") %>%
+  filter(model == "ENet") %>%
   ggplot(mapping = aes(x = value,
                        y = features,
                        color = last_used_observation)) +
   geom_point(position = position_dodge2(width = .4, reverse = TRUE), shape = 1, alpha = .5) +
-  geom_point(data = ls_hyperparameters$df_all_hp_best1 %>% filter(model == "enet"),
+  geom_point(data = ls_hyperparameters$df_all_hp_best1 %>% filter(model == "ENet"),
              position = position_dodge2(width = .4, reverse = TRUE),
              mapping = aes(color = "Best")) +
   scale_color_manual(values = c(viridis::viridis(n = 17), "red")) +

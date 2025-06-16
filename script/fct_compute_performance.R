@@ -56,7 +56,14 @@ fct_compute_prediction <- function(path_files){
     ungroup() |> 
     mutate(update = factor(update,
                            levels = c("No", "Yes"),
-                           labels = c("No monthly update", "Monthly update")))
+                           labels = c("No monthly update", "Monthly update"))) |> 
+    mutate(model = forcats::fct_recode(model,
+                                       "ENet" = "enet",
+                                       "RC" = "reservoir",
+                                       "XGBoost" = "xgboost"),
+           features = forcats::fct_recode(features,
+                                          "All" = "all",
+                                          "Epi" = "epi"))
   
   df_prediction_by_day <- df_prediction %>%
     mutate(outcome = if_else(outcome < 10, 10, outcome),
@@ -153,7 +160,14 @@ fct_compute_hyperparameters <- function(path){
                                                         pattern = "\\d{4}-\\d{2}-\\d{2}"),
            last_used_observation = as.Date(last_used_observation)) %>%
     filter(value != 1000) %>%
-    select(genetic_id, value, model, starting_date, features, last_used_observation, all_of(vec_numeric_hp))
+    select(genetic_id, value, model, starting_date, features, last_used_observation, all_of(vec_numeric_hp)) |> 
+    mutate(model = forcats::fct_recode(model,
+                                       "ENet" = "enet",
+                                       "RC" = "reservoir",
+                                       "XGBoost" = "xgboost"),
+           features = forcats::fct_recode(features,
+                                          "All" = "all",
+                                          "Epi" = "epi"))
   
   ## get the best 40 by date
   df_all_hp <- df_hyperparameters %>%
@@ -208,7 +222,14 @@ fct_compute_emissions <- function(path){
                                        train_test == "Train" ~ 200),
            total_mean_emissions = mean_emissions * theoric_nb_jobs,
            total_mean_energy = mean_energy * theoric_nb_jobs,
-           total_mean_time = mean_time * theoric_nb_jobs)
+           total_mean_time = mean_time * theoric_nb_jobs) |> 
+    mutate(model = forcats::fct_recode(model,
+                                       "ENet" = "enet",
+                                       "RC" = "reservoir",
+                                       "XGBoost" = "xgboost"),
+           features = forcats::fct_recode(features,
+                                          "All" = "all",
+                                          "Epi" = "epi"))
   
   return(df_emissions)
 }
