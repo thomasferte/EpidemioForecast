@@ -47,6 +47,45 @@ fct_pi_agaci <- function(df_conformal,
   return(df_aci_res)
 }
 
+fct_pi_boot <- function(df_conformal,
+                        init_date = as.Date("2021-03-01"),
+                        alpha = 0.95,
+                        horizon = 14,
+                        nboot = 1000) {
+  
+  vec_train_dates <- df_conformal |>
+    mutate(train_date = outcomeDate - horizon) |>
+    filter(train_date >= init_date) |>
+    arrange(train_date) |>
+    pull(train_date) |> 
+    as.Date()
+  
+  # Embed shared variables inside the worker function
+  boot_worker <- function(train_date_i) {
+    vec_residuals_train <- df_conformal |>
+      filter(outcomeDate <= train_date_i) |> 
+      mutate(residuals = pred-outcome) |> 
+      select(residuals) |> 
+      sample_n(size = nboot, replace = TRUE) |> 
+      summarise(inf = quantile(residuals, 0.025),
+                sup = quantile(residuals, 0.975))
+    
+    df_conformal |>
+      filter(outcomeDate == train_date_i + horizon) |> 
+      mutate(pi_inf = pred + vec_residuals_train$inf,
+             pi_sup = pred + vec_residuals_train$sup,
+             pi_method = "BS")
+  }
+  
+  # Now it works: no missing context
+  df_aci_res <- lapply(
+    vec_train_dates,
+    boot_worker
+  ) |> bind_rows()
+  
+  return(df_aci_res)
+}
+
 fct_pi_adhoc <- function(df_conformal,
                          init_date = as.Date("2021-03-01"),
                          alpha = 0.95,
@@ -114,16 +153,21 @@ fct_pi <- function(df_conformal,
                                    init_date = init_date,
                                    alpha = alpha,
                                    horizon = horizon)
+  df_bs <- fct_pi_boot(df_conformal = df_conformal,
+                       nboot = 1000,
+                       init_date = init_date,
+                       alpha = alpha,
+                       horizon = horizon)
   df_conformal <- fct_pi_agaci(df_conformal = df_conformal,
                                init_date = init_date,
                                alpha = alpha,
                                horizon = horizon)
   
-  if((nrow(df_adhoc) != nrow(df_residuals)) | (nrow(df_residuals) != nrow(df_conformal))){
+  if((nrow(df_adhoc) != nrow(df_residuals)) | (nrow(df_residuals) != nrow(df_conformal)) | (nrow(df_conformal) != nrow(df_bs))){
     stop("Size of prediction intervals methods are different, something is wrong")
   }
   
-  df_all <- bind_rows(df_adhoc, df_residuals, df_conformal)
+  df_all <- bind_rows(df_adhoc, df_residuals, df_conformal, df_bs)
   
   return(df_all)
 }
