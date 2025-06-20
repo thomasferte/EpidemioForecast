@@ -5,11 +5,13 @@
   Introduction](#introduction)
 - [<span class="toc-section-number">2</span> Methods](#methods)
 - [<span class="toc-section-number">3</span> Prediction](#prediction)
-  - [<span class="toc-section-number">3.0.1</span> Sanity
+  - [<span class="toc-section-number">3.0.1</span> Uncertainty
+    quantification](#uncertainty-quantification)
+  - [<span class="toc-section-number">3.0.2</span> Sanity
     check](#sanity-check)
-  - [<span class="toc-section-number">3.0.2</span>
-    Prediction](#prediction-1)
   - [<span class="toc-section-number">3.0.3</span>
+    Prediction](#prediction-1)
+  - [<span class="toc-section-number">3.0.4</span>
     Performance](#performance)
 - [<span class="toc-section-number">4</span>
   Hyperparameters](#hyperparameters)
@@ -69,6 +71,15 @@ Expected results:
   computing
 
 # Prediction
+
+### Uncertainty quantification
+
+    [1] "ENet All"
+    [1] "ENet Epi"
+    [1] "RC All"
+    [1] "RC Epi"
+    [1] "XGBoost All"
+    [1] "XGBoost Epi"
 
 ### Sanity check
 
@@ -995,10 +1006,10 @@ visualisation.](experience1_files/figure-commonmark/overallPerf-1.png)
 ## Sanity check
 
 ![Numbers of trial per model and date. Sanity
-check.](experience1_files/figure-commonmark/unnamed-chunk-9-1.png)
+check.](experience1_files/figure-commonmark/unnamed-chunk-13-1.png)
 
 ![Q1-Q3 distribution of numeric hyperparameters. Sanity
-check.](experience1_files/figure-commonmark/unnamed-chunk-10-1.png)
+check.](experience1_files/figure-commonmark/unnamed-chunk-14-1.png)
 
 ## Numeric hyperparameters
 
@@ -1018,7 +1029,7 @@ hyperparameter update date.
 
 ![Execution time, energy consumption and carbon footprint by algorithm
 starting at
-2021-03-01..](experience1_files/figure-commonmark/unnamed-chunk-12-1.png)
+2021-03-01..](experience1_files/figure-commonmark/unnamed-chunk-16-1.png)
 
 <div id="fig-emissionvsperformance">
 

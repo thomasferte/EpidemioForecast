@@ -13,7 +13,10 @@ prefer-html: true
 ```{r}
 set.seed(1)
 library(tidyverse)
+library(patchwork)
+
 source(here::here("script/fct_compute_performance.R"))
+source(here::here("script/fct_prediction_intervals.R"))
 ```
 
 ```{r}
@@ -69,6 +72,94 @@ df_prediction <- lapply(1:length(ls_prediction_performance_all),
   bind_rows()
 ```
 
+### Uncertainty quantification
+
+```{r}
+file_df_pi <- here::here("output/report_precomputations/df_pi.rds")
+
+if(file.exists(file_df_pi)){
+  df_pi <- readRDS(file_df_pi)
+} else {
+  df_conformal <- ls_prediction_performance_all[[1]]$df_prediction_by_day |>
+    filter(starting_date == "2020-09-02", update == "Monthly update")
+  
+  df_scenaro <- df_conformal |> distinct(model, features)
+  
+  df_pi <- apply(df_scenaro, 1, function(x){
+    print(paste(x["model"], x["features"]))
+    df_conformal |>
+      filter(model == x["model"],
+             features == x["features"]) |> 
+      fct_pi()
+  }) |> 
+    bind_rows() |> 
+    mutate(pi_inf = if_else(pi_inf < 10, 10, pi_inf))
+  
+  saveRDS(df_pi, file = file_df_pi)
+}
+
+```
+
+```{r}
+plot_pi <- df_pi |> 
+  select(features, model, outcomeDate, outcome, pred, pi_inf, pi_sup, pi_method) |> 
+  tidyr::pivot_longer(cols = c(outcome, pred, pi_inf, pi_sup)) |>
+  mutate(pi_method = if_else(name %in% c("outcome", "pred"),
+                             name,
+                             pi_method),
+         pi_method = factor(pi_method,
+                            levels = c("outcome", "pred", "Ad hoc", "Conformal", "Residuals"),
+                            labels = c("Observed", "Predicted", "Ad hoc", "Conformal", "Residuals"))) |> 
+  ggplot(mapping = aes(x = outcomeDate,
+                       y = value,
+                       color = pi_method,
+                       group = interaction(pi_method, name))) +
+  geom_line() +
+  facet_grid(model ~ features) +
+  scale_color_manual(values = c("black", "grey", viridis::viridis(n = 3, begin = 0.1, end = 0.9))) +
+  scale_linetype_manual(values = c(2, 2, 1, 1, 1)) +
+  scale_x_date(breaks = "3 months") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90),
+        legend.position = "bottom") +
+  labs(x = "Date",
+       y = "Hospitalizations",
+       color = "",
+       linetype = "")
+```
+
+
+```{r}
+df_pi_coverage <- fct_pi_coverage(df_pi)
+
+plot_coverage <- df_pi_coverage |> 
+  ggplot(mapping = aes(x = median_width, y = pct_coverage, color = pi_method, shape = interaction(model, features))) +
+  geom_point(size = 2) +
+  geom_hline(yintercept = 0.95, linetype = 2) +
+  scale_shape_manual(values = c(15, 16, 17, 0, 1, 2)) +
+  scale_color_manual(values = c(viridis::viridis(n = 3, begin = 0.1, end = 0.9))) +
+  theme_bw() +
+  theme(legend.position = "bottom") +
+  guides(color = guide_legend(ncol = 1),
+         shape = guide_legend(ncol = 2)) +
+  labs(x = "Mean hospitalizations prediction interval width",
+       y = "Coverage percentage",
+       color = "Method",
+       shape = "Model.Features")
+```
+
+```{r}
+plot_prediction_interval <- plot_pi / plot_coverage +
+  plot_layout(heights = c(2.5, 1)) +
+  plot_annotation(tag_levels = "A")
+
+ggsave(plot_prediction_interval,
+       filename = here::here("figures/plot_prediction_interval.pdf"),
+       height = 8,
+       width = 5.5)
+```
+
+
 ### Sanity check
 
 First, we check that there is 40 reservoir prediction for each day of
@@ -76,7 +167,7 @@ the prediction for each scenario. At figure @fig-sanitycheckNbReservoirPerDay, w
 forecast for each day. Some days have less than 40 reservoirs but the
 minimum is 39 which seems acceptable.
 
-```{r sanitycheckNbReservoirPerDay}
+```{r}
 #| fig-cap: "Number of reservoir per day for prediction"
 #| label: fig-sanitycheckNbReservoirPerDay
 #| fig-height: 4
@@ -121,7 +212,7 @@ First we show a graphical evaluation of the different algorithms. On panel A of 
 
 Regarding the graphical performance at the early phase of the epidemic, xgboost seemed worse compared to elastic-net and reservoir computing due to this high volatility. However, when more information is available 
 
-```{r PredictionByDayByModel}
+```{r}
 #| fig-cap: "Prediction by day by model. Only results of the first repetition are shown."
 #| label: fig-PredictionByDayByModel
 #| fig-height: 10
