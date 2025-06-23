@@ -15,4 +15,5 @@ article/*
 results/*
 *.html
 *.pdf
+*.odp
 .env
