@@ -117,26 +117,64 @@ fct_pi_adhoc <- function(df_conformal,
   return(df_adhoc)
 }
 
+# fct_pi_residuals <- function(df_conformal,
+#                              init_date = as.Date("2021-03-01"),
+#                              alpha = 0.95,
+#                              horizon = 14){
+#   
+#   df_conformal_train <- df_conformal |>
+#     filter(outcomeDate <= init_date)
+#   
+#   sd_residuals <- df_conformal_train |> 
+#     mutate(residuals = pred - outcome) |> 
+#     pull(residuals) |> 
+#     sd()
+#   
+#   normal_dist_modifier <- abs(qnorm(p = (1-alpha)/2))*sd_residuals
+#   
+#   df_residuals <- df_conformal |> 
+#     filter(outcomeDate >= init_date+horizon) |> 
+#     mutate(pi_inf = pred - normal_dist_modifier,
+#            pi_sup = pred + normal_dist_modifier,
+#            pi_method = "Residuals")
+#   
+#   return(df_residuals)
+# }
+
 fct_pi_residuals <- function(df_conformal,
                              init_date = as.Date("2021-03-01"),
                              alpha = 0.95,
                              horizon = 14){
   
-  df_conformal_train <- df_conformal |>
-    filter(outcomeDate <= init_date)
+  vec_train_dates <- df_conformal |>
+    mutate(train_date = outcomeDate - horizon) |>
+    filter(train_date >= init_date) |>
+    arrange(train_date) |>
+    pull(train_date) |> 
+    as.Date()
   
-  sd_residuals <- df_conformal_train |> 
-    mutate(residuals = pred - outcome) |> 
-    pull(residuals) |> 
-    sd()
+  # Embed shared variables inside the worker function
+  residuals_worker <- function(train_date_i) {
+    sd_residuals_train <- df_conformal |>
+      filter(outcomeDate <= train_date_i) |> 
+      mutate(residuals = pred-outcome) |> 
+      pull(residuals) |> 
+      sd()
+    
+    normal_dist_modifier <- abs(qnorm(p = (1-alpha)/2))*sd_residuals_train
+    
+    df_conformal |>
+      filter(outcomeDate == train_date_i + horizon) |> 
+      mutate(pi_inf = pred - normal_dist_modifier,
+             pi_sup = pred + normal_dist_modifier,
+             pi_method = "Residuals")
+  }
   
-  normal_dist_modifier <- abs(qnorm(p = (1-alpha)/2))*sd_residuals
-  
-  df_residuals <- df_conformal |> 
-    filter(outcomeDate >= init_date+horizon) |> 
-    mutate(pi_inf = pred - normal_dist_modifier,
-           pi_sup = pred + normal_dist_modifier,
-           pi_method = "Residuals")
+  # Now it works: no missing context
+  df_residuals <- lapply(
+    vec_train_dates,
+    residuals_worker
+  ) |> bind_rows()
   
   return(df_residuals)
 }

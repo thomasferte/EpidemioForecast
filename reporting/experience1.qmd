@@ -108,8 +108,8 @@ plot_pi <- df_pi |>
                              name,
                              pi_method),
          pi_method = factor(pi_method,
-                            levels = c("outcome", "pred", "Ad hoc", "Conformal", "Residuals", "BS"),
-                            labels = c("Observed", "Predicted", "Ad hoc", "Conformal", "Residuals", "BS"))) |> 
+                            levels = c("outcome", "pred", "Conformal", "BS", "Residuals", "Ad hoc"),
+                            labels = c("Observed", "Predicted", "Conformal", "BS", "Residuals", "Ad hoc"))) |> 
   ggplot(mapping = aes(x = outcomeDate,
                        y = value,
                        color = pi_method,
@@ -134,8 +134,8 @@ df_pi_coverage <- fct_pi_coverage(df_pi)
 
 plot_coverage <- df_pi_coverage |> 
   mutate(pi_method = factor(pi_method,
-                            levels = c("Ad hoc", "Conformal", "Residuals", "BS"),
-                            labels = c("Ad hoc", "Conformal", "Residuals", "BS"))) |> 
+                            levels = c("Conformal", "BS", "Residuals", "Ad hoc"),
+                            labels = c("Conformal", "BS", "Residuals", "Ad hoc"))) |> 
   ggplot(mapping = aes(x = median_width,
                        y = pct_coverage,
                        color = pi_method)) +
