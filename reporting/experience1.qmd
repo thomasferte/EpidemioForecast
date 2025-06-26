@@ -81,7 +81,8 @@ if(file.exists(file_df_pi)){
   df_pi <- readRDS(file_df_pi)
 } else {
   df_conformal <- ls_prediction_performance_all[[1]]$df_prediction_by_day |>
-    filter(starting_date == "2020-09-02", update == "Monthly update")
+    filter(starting_date == "2020-09-02", update == "Monthly update") |> 
+    filter(model == "RC", features == "All")
   
   df_scenaro <- df_conformal |> distinct(model, features)
   
@@ -99,6 +100,35 @@ if(file.exists(file_df_pi)){
 }
 
 ```
+
+```{r}
+plot_pi_rc_all <- df_pi |> 
+  dplyr::filter(features == "All", model == "RC") |> 
+  select(outcomeDate, outcome, pred, pi_inf, pi_sup, pi_method) |> 
+  tidyr::pivot_longer(cols = c(outcome, pred, pi_inf, pi_sup)) |>
+  mutate(pi_method = if_else(name %in% c("outcome", "pred"),
+                             name,
+                             pi_method),
+         pi_method = factor(pi_method,
+                            levels = c("outcome", "pred", "Conformal", "BS", "Residuals", "Ad hoc"),
+                            labels = c("Observed", "Predicted", "Conformal", "BS", "Residuals", "Ad hoc"))) |> 
+  ggplot(mapping = aes(x = outcomeDate,
+                       y = value,
+                       color = pi_method,
+                       group = interaction(pi_method, name))) +
+  geom_line() +
+  scale_color_manual(values = c("black", "grey", viridis::viridis(n = 4, begin = 0.1, end = 0.9))) +
+  scale_linetype_manual(values = c(2, 2, 1, 1, 1)) +
+  scale_x_date(breaks = "3 months") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 0)) +
+  labs(x = "Date",
+       y = "Hospitalizations",
+       color = "",
+       linetype = "",
+       subtitle = "All.RC")
+```
+
 
 ```{r}
 plot_pi <- df_pi |> 
@@ -126,6 +156,11 @@ plot_pi <- df_pi |>
        y = "Hospitalizations",
        color = "",
        linetype = "")
+
+ggsave(plot_pi,
+       filename = here::here("figures/plot_pi.pdf"),
+       height = 7,
+       width = 5.5)
 ```
 
 
@@ -138,23 +173,26 @@ plot_coverage <- df_pi_coverage |>
                             labels = c("Conformal", "BS", "Residuals", "Ad hoc"))) |> 
   ggplot(mapping = aes(x = median_width,
                        y = pct_coverage,
-                       color = pi_method)) +
+                       color = pi_method,
+                       shape = interaction(features, model),
+                       group = pi_method)) +
   geom_point(size = 2) +
   geom_hline(yintercept = 0.95, linetype = 2) +
-  facet_grid(model ~ features) +
   scale_color_manual(values = c(viridis::viridis(n = 4, begin = 0.1, end = 0.9))) +
+  scale_shape_manual(values = c(0, 15, 1, 16, 2, 17)) +
+  scale_y_continuous(limits = c(.7, 1.05), breaks = c(0.7, 0.8, 0.9, 1.0)) +
+  facet_grid(pi_method ~ .) +
   theme_bw() +
-  theme(legend.position = "bottom") +
-  guides(color = guide_legend(ncol = 4)) +
+  guides(color = guide_legend(ncol = 1)) +
   labs(x = "Mean hospitalizations prediction interval width",
        y = "Coverage percentage",
        color = "Method",
-       shape = "Model")
+       shape = "Features.Model")
 ```
 
 ```{r}
-plot_prediction_interval <- plot_pi / plot_coverage +
-  plot_layout(heights = c(1.2, 1)) +
+plot_prediction_interval <- plot_coverage / plot_pi_rc_all +
+  plot_layout(heights = c(1, 1)) +
   plot_annotation(tag_levels = "A")
 
 ggsave(plot_prediction_interval,

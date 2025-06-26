@@ -999,10 +999,10 @@ visualisation.](experience1_files/figure-commonmark/overallPerf-1.png)
 ## Sanity check
 
 ![Numbers of trial per model and date. Sanity
-check.](experience1_files/figure-commonmark/unnamed-chunk-13-1.png)
+check.](experience1_files/figure-commonmark/unnamed-chunk-14-1.png)
 
 ![Q1-Q3 distribution of numeric hyperparameters. Sanity
-check.](experience1_files/figure-commonmark/unnamed-chunk-14-1.png)
+check.](experience1_files/figure-commonmark/unnamed-chunk-15-1.png)
 
 ## Numeric hyperparameters
 
@@ -1022,7 +1022,7 @@ hyperparameter update date.
 
 ![Execution time, energy consumption and carbon footprint by algorithm
 starting at
-2021-03-01..](experience1_files/figure-commonmark/unnamed-chunk-16-1.png)
+2021-03-01..](experience1_files/figure-commonmark/unnamed-chunk-17-1.png)
 
 <div id="fig-emissionvsperformance">
 
