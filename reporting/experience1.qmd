@@ -113,9 +113,9 @@ plot_pi_rc_all <- df_pi |>
                        y = value,
                        color = pi_method,
                        group = interaction(pi_method, name))) +
-  geom_line() +
-  geom_line(mapping = aes(y = pred, color = "Predicted"), linewidth = 1, linetype = "21") +
-  geom_line(mapping = aes(y = outcome, color = "Observed"), linewidth = 1, linetype = "21") +
+  geom_line(linetype = "21") +
+  geom_line(mapping = aes(y = pred, color = "Predicted"), linewidth = .7) +
+  geom_line(mapping = aes(y = outcome, color = "Observed"), linewidth = .7) +
   scale_color_manual(values = c(viridis::viridis(n = 4, begin = 0.1, end = 0.9), "grey", "black")) +
   scale_x_date(breaks = "3 months") +
   theme_bw() +
@@ -139,9 +139,9 @@ plot_pi <- df_pi |>
                        y = value,
                        color = pi_method,
                        group = interaction(pi_method, name))) +
-  geom_line() +
-  geom_line(mapping = aes(y = pred, color = "Predicted"), linewidth = 1, linetype = "21") +
-  geom_line(mapping = aes(y = outcome, color = "Observed"), linewidth = 1, linetype = "21") +
+  geom_line(linetype = "21") +
+  geom_line(mapping = aes(y = pred, color = "Predicted"), linewidth = .7) +
+  geom_line(mapping = aes(y = outcome, color = "Observed"), linewidth = .7) +
   scale_color_manual(values = c(viridis::viridis(n = 4, begin = 0.1, end = 0.9), "grey", "black")) +
   facet_grid(model ~ features) +
   scale_x_date(breaks = "3 months") +
@@ -193,8 +193,8 @@ plot_prediction_interval <- plot_coverage / plot_pi_rc_all +
 
 ggsave(plot_prediction_interval,
        filename = here::here("figures/plot_prediction_interval.pdf"),
-       height = 8,
-       width = 5.5)
+       height = 7,
+       width = 6)
 ```
 
 
