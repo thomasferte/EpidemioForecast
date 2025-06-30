@@ -74,6 +74,10 @@ Expected results:
 
 ### Uncertainty quantification
 
+![](experience1_files/figure-commonmark/unnamed-chunk-5-1.png)
+
+![](experience1_files/figure-commonmark/unnamed-chunk-6-1.png)
+
 ### Sanity check
 
 First, we check that there is 40 reservoir prediction for each day of
@@ -1030,6 +1034,15 @@ starting at
 
 
 Figure 7: Mean Absolute Error and Carbon footprint by algorithm starting
+at 2021-03-01.
+
+</div>
+<div id="fig-emissionvsperformancelog">
+
+![](experience1_files/figure-commonmark/fig-emissionvsperformancelog-1.png)
+
+
+Figure 8: Mean Absolute Error and Carbon footprint by algorithm starting
 at 2021-03-01.
 
 </div>

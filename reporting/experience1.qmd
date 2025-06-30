@@ -105,49 +105,45 @@ if(file.exists(file_df_pi)){
 plot_pi_rc_all <- df_pi |> 
   dplyr::filter(features == "All", model == "RC") |> 
   select(outcomeDate, outcome, pred, pi_inf, pi_sup, pi_method) |> 
-  tidyr::pivot_longer(cols = c(outcome, pred, pi_inf, pi_sup)) |>
-  mutate(pi_method = if_else(name %in% c("outcome", "pred"),
-                             name,
-                             pi_method),
-         pi_method = factor(pi_method,
-                            levels = c("outcome", "pred", "Conformal", "BS", "Residuals", "Ad hoc"),
-                            labels = c("Observed", "Predicted", "Conformal", "BS", "Residuals", "Ad hoc"))) |> 
+  tidyr::pivot_longer(cols = c(pi_inf, pi_sup)) |>
+  mutate(pi_method = factor(pi_method,
+                            levels = c("Conformal", "BS", "Residuals", "Ad hoc"),
+                            labels = c("Conformal", "BS", "Residuals", "Ad hoc"))) |> 
   ggplot(mapping = aes(x = outcomeDate,
                        y = value,
                        color = pi_method,
                        group = interaction(pi_method, name))) +
   geom_line() +
-  scale_color_manual(values = c("black", "grey", viridis::viridis(n = 4, begin = 0.1, end = 0.9))) +
-  scale_linetype_manual(values = c(2, 2, 1, 1, 1)) +
+  geom_line(mapping = aes(y = pred, color = "Predicted"), linewidth = 1, linetype = "21") +
+  geom_line(mapping = aes(y = outcome, color = "Observed"), linewidth = 1, linetype = "21") +
+  scale_color_manual(values = c(viridis::viridis(n = 4, begin = 0.1, end = 0.9), "grey", "black")) +
   scale_x_date(breaks = "3 months") +
   theme_bw() +
   theme(axis.text.x = element_text(angle = 0)) +
   labs(x = "Date",
        y = "Hospitalizations",
        color = "",
-       linetype = "",
        subtitle = "All.RC")
+plot_pi_rc_all
 ```
 
 
 ```{r}
 plot_pi <- df_pi |> 
   select(features, model, outcomeDate, outcome, pred, pi_inf, pi_sup, pi_method) |> 
-  tidyr::pivot_longer(cols = c(outcome, pred, pi_inf, pi_sup)) |>
-  mutate(pi_method = if_else(name %in% c("outcome", "pred"),
-                             name,
-                             pi_method),
-         pi_method = factor(pi_method,
-                            levels = c("outcome", "pred", "Conformal", "BS", "Residuals", "Ad hoc"),
-                            labels = c("Observed", "Predicted", "Conformal", "BS", "Residuals", "Ad hoc"))) |> 
+  tidyr::pivot_longer(cols = c(pi_inf, pi_sup)) |>
+  mutate(pi_method = factor(pi_method,
+                            levels = c("Conformal", "BS", "Residuals", "Ad hoc"),
+                            labels = c("Conformal", "BS", "Residuals", "Ad hoc"))) |> 
   ggplot(mapping = aes(x = outcomeDate,
                        y = value,
                        color = pi_method,
                        group = interaction(pi_method, name))) +
   geom_line() +
+  geom_line(mapping = aes(y = pred, color = "Predicted"), linewidth = 1, linetype = "21") +
+  geom_line(mapping = aes(y = outcome, color = "Observed"), linewidth = 1, linetype = "21") +
+  scale_color_manual(values = c(viridis::viridis(n = 4, begin = 0.1, end = 0.9), "grey", "black")) +
   facet_grid(model ~ features) +
-  scale_color_manual(values = c("black", "grey", viridis::viridis(n = 4, begin = 0.1, end = 0.9))) +
-  scale_linetype_manual(values = c(2, 2, 1, 1, 1)) +
   scale_x_date(breaks = "3 months") +
   theme_bw() +
   theme(axis.text.x = element_text(angle = 90),
@@ -156,7 +152,7 @@ plot_pi <- df_pi |>
        y = "Hospitalizations",
        color = "",
        linetype = "")
-
+plot_pi
 ggsave(plot_pi,
        filename = here::here("figures/plot_pi.pdf"),
        height = 7,
@@ -574,6 +570,12 @@ ggsave(evolutionhyperparameters,
 # Time and carbon footprint
 
 ```{r}
+test <- read.csv(file = here::here("output/experience2/aggregated_results/emissions_logs.csv"))
+a <- fct_compute_emissions(path = vec_path_experience[2])
+```
+
+
+```{r}
 df_emissions <- lapply(X = vec_path_experience, FUN = fct_compute_emissions) %>%
   bind_rows(.id = "rep")
 
@@ -602,6 +604,8 @@ df_emissions %>%
   geom_point(position = position_dodge(width = .5)) +
   geom_errorbar(position = position_dodge(width = .5), width = 0) +
   scale_color_manual(values = color_methods) +
+  scale_y_log10() +
+  annotation_logticks(sides = "l") +
   facet_wrap(name ~ train_test,
              scales = "free_y",
              labeller = labeller(name = vec_time_labeller),
@@ -661,6 +665,40 @@ emissionvsperformance
 
 ggsave(emissionvsperformance,
        filename = here::here("figures/emissionvsperformance.pdf"),
+       height = 4,
+       width = 5)
+```
+
+
+```{r}
+#| fig-cap: "Mean Absolute Error and Carbon footprint by algorithm starting at 2021-03-01."
+#| fig-height: 4
+#| label: fig-emissionvsperformancelog
+#| 
+
+emissionvsperformance <- df_performance_vs_CO2 %>%
+  ggplot(mapping = aes(x = median_total_mean_emissions, y = median_MAE,
+                       xmin = min_total_mean_emissions, xmax = max_total_mean_emissions,
+                       ymin = min_MAE, ymax = max_MAE,
+                       color = model, shape = features)) +
+  geom_point(size = 3) +
+  geom_errorbar(width = 0) +
+  geom_errorbarh(height = 0) +
+  scale_x_log10() +
+  annotation_logticks(sides = "b") +
+  scale_color_manual(values = color_methods) +
+  scale_shape_manual(values = c(8, 18)) +
+  theme_bw() +
+  labs(x = "train + test CO2eq (kg)",
+       y = "Mean Absolute Error",
+       color = "Model",
+       shape = "Features") +
+  ylim(c(0,20))
+
+emissionvsperformance
+
+ggsave(emissionvsperformance,
+       filename = here::here("figures/emissionvsperformancelog.pdf"),
        height = 4,
        width = 5)
 ```
