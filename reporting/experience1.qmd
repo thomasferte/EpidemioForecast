@@ -570,12 +570,6 @@ ggsave(evolutionhyperparameters,
 # Time and carbon footprint
 
 ```{r}
-test <- read.csv(file = here::here("output/experience2/aggregated_results/emissions_logs.csv"))
-a <- fct_compute_emissions(path = vec_path_experience[2])
-```
-
-
-```{r}
 df_emissions <- lapply(X = vec_path_experience, FUN = fct_compute_emissions) %>%
   bind_rows(.id = "rep")
 
