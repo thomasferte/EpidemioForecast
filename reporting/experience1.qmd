@@ -667,8 +667,8 @@ plot_performance_vs_time <- df_performance_vs_time %>%
   theme_bw() +
   labs(shape = "Features",
        color = "Model",
-       y = "Features",
-       x = "Time (h)")
+       y = "Model",
+       x = "Computation Time (h)")
 
 
 ```
