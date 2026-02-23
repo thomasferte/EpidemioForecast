@@ -1028,21 +1028,12 @@ hyperparameter update date.
 starting at
 2021-03-01..](experience1_files/figure-commonmark/unnamed-chunk-17-1.png)
 
-<div id="fig-emissionvsperformance">
-
-![](experience1_files/figure-commonmark/fig-emissionvsperformance-1.png)
-
-
-Figure 7: Mean Absolute Error and Carbon footprint by algorithm starting
-at 2021-03-01.
-
-</div>
 <div id="fig-emissionvsperformancelog">
 
 ![](experience1_files/figure-commonmark/fig-emissionvsperformancelog-1.png)
 
 
-Figure 8: Mean Absolute Error and Carbon footprint by algorithm starting
+Figure 7: Mean Absolute Error and Carbon footprint by algorithm starting
 at 2021-03-01.
 
 </div>

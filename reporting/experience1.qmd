@@ -579,6 +579,10 @@ vec_time_labeller <- c("CO2eq (kg)",
 names(vec_time_labeller) <- c("total_mean_emissions",
                               "total_mean_energy",
                               "total_mean_time")
+
+vec_train_test_labeller <- c("Forecast",
+                             "Hyperparameters optimization")
+names(vec_train_test_labeller) <- c("Test", "Train")
 ```
 
 ```{r}
@@ -612,11 +616,6 @@ df_emissions %>%
 ```
 
 ```{r}
-#| fig-cap: "Mean Absolute Error and Carbon footprint by algorithm starting at 2021-03-01."
-#| fig-height: 4
-#| label: fig-emissionvsperformance
-#| 
-
 df_performance_vs_CO2_tempCO2 <- df_emissions %>%
   group_by(rep, model, starting_date, features) %>%
   summarise(total_mean_emissions = sum(total_mean_emissions),
@@ -638,29 +637,40 @@ df_performance_vs_CO2 <- df_perf_all_rep %>%
   left_join(df_performance_vs_CO2_tempCO2,
             by = c("model", "starting_date", "features"))
 
-emissionvsperformance <- df_performance_vs_CO2 %>%
-  ggplot(mapping = aes(x = median_total_mean_emissions, y = median_MAE,
-                       xmin = min_total_mean_emissions, xmax = max_total_mean_emissions,
-                       ymin = min_MAE, ymax = max_MAE,
-                       color = model, shape = features)) +
-  geom_point(size = 3) +
-  geom_errorbar(width = 0) +
-  geom_errorbarh(height = 0) +
+##### estimation time
+
+df_performance_vs_time <- df_emissions %>%
+  filter(starting_date == "2021-03-01") %>%
+  group_by(rep, model, train_test, starting_date, features) %>%
+  summarise(total_mean_time = sum(total_mean_time),
+            .groups = "drop") %>%
+  group_by(model, train_test, starting_date, features) %>%
+  summarise(median_total_mean_time = median(total_mean_time),
+            min_total_mean_time = min(total_mean_time),
+            max_total_mean_time = max(total_mean_time),
+            .groups = "drop")
+
+plot_performance_vs_time <- df_performance_vs_time %>%
+  ggplot(mapping = aes(y = model, x = median_total_mean_time,
+                       xmin = min_total_mean_time, xmax = max_total_mean_time,
+                       color = model,
+                       shape = features)) +
+  geom_point(size = 3, position = position_dodge(width = .5)) +
+  geom_errorbarh(position = position_dodge(width = .5), width = 0) +
   scale_color_manual(values = color_methods) +
   scale_shape_manual(values = c(8, 18)) +
+  scale_x_log10() +
+  annotation_logticks(sides = "b") +
+  facet_wrap(. ~ train_test,
+             labeller = labeller(train_test = vec_train_test_labeller),
+             ncol = 2) +
   theme_bw() +
-  labs(x = "train + test CO2eq (kg)",
-       y = "Mean Absolute Error",
+  labs(shape = "Features",
        color = "Model",
-       shape = "Features") +
-  ylim(c(0,20))
+       y = "Features",
+       x = "Time (h)")
 
-emissionvsperformance
 
-ggsave(emissionvsperformance,
-       filename = here::here("figures/emissionvsperformance.pdf"),
-       height = 4,
-       width = 5)
 ```
 
 
@@ -695,5 +705,22 @@ ggsave(emissionvsperformance,
        filename = here::here("figures/emissionvsperformancelog.pdf"),
        height = 4,
        width = 5)
+```
+
+```{r}
+#| fig-cap: "Mean Absolute Error, Carbon footprint and computation time by algorithm starting at 2021-03-01."
+#| fig-height: 8
+#| label: fig-plot_carbon_time
+
+plot_carbon_time <- ggpubr::ggarrange(emissionvsperformance, plot_performance_vs_time,
+                  ncol = 1,
+                  common.legend = TRUE, legend = "right",
+                  labels = c("A", "B"))
+
+ggsave(plot_carbon_time,
+       filename = here::here("figures/plot_carbon_time.pdf"),
+       height = 5,
+       width = 5.5)
+
 ```
 
